@@ -2,7 +2,7 @@
 import datetime
 import unittest
 
-from enum import StrEnum, auto
+from enum import StrEnum
 from typing import List, Optional
 from pydantic import BaseModel, Field
 

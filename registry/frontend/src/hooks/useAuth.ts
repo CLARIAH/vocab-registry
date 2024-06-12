@@ -2,8 +2,8 @@ import {useEffect, useState} from 'react';
 
 export interface UserInfo {
     sub: string;
-    email?: string;
-    nickname?: string;
+    email: string;
+    nickname: string;
 }
 
 export default function useAuth(): [boolean, UserInfo | null] {

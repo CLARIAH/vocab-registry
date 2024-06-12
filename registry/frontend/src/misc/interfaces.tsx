@@ -20,12 +20,11 @@ export interface Vocab {
 }
 
 export interface Review {
-    id: string;
-    rating: number;
+    author: string;
     review: string;
-    nickname: string | null;
-    moderation: 'blocked' | 'quarantaine' | null;
-    user: string;
+    rating: number;
+    like: any[];
+    dislike: any[];
 }
 
 export interface VocabLocation {

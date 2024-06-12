@@ -1,4 +1,3 @@
-import json
 import os
 import elementpath
 import unicodedata
@@ -10,7 +9,6 @@ from pydantic import BaseModel
 from typing import Optional, List
 from inspect import cleandoc
 from config import records_path
-from registry.rating import RatingModel
 
 ns = {"cmd": "http://www.clarin.eu/cmd/"}
 ns_prefix = '{http://www.clarin.eu/cmd/}'
@@ -32,9 +30,7 @@ xpath_review_elem = "./cmd:body"
 xpath_review_author_elem = "./cmd:author"
 xpath_review_blocked_elem = "./cmd:blocked"
 xpath_rating_elem = "./cmd:rating"
-# xpath_like_elem = "count(./cmd:like)"
 xpath_like_elem = "./cmd:like/text()"
-# xpath_dislike_elem = "count(./cmd:dislike)"
 xpath_dislike_elem = "./cmd:dislike/text()"
 xpath_namespace_elem = "./cmd:Namespaces/cmd:Namespace"
 xpath_namespace_item_elem = "./cmd:NamespaceItems/cmd:NamespaceItem"
@@ -215,9 +211,6 @@ def get_record(id: str) -> Vocab:
         )
 
     def create_review_for(elem: Element) -> Review:
-        x = grab_value(xpath_review_blocked_elem, elem)
-        if x:
-            print(x)
         return Review(
             author=grab_value(xpath_review_author_elem, elem),
             review=grab_value(xpath_review_elem, elem),

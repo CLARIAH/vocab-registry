@@ -137,7 +137,7 @@ def review_form(id):
         "reviews": [review]}
     rating_model = RatingModel(**rating_data)
     rating_model_json = rating_model.model_dump_json(by_alias=True)
-    execute_xslt(os.environ.get('RECORDS_PATH', '../data/records/') + id + '.cmdi', rating_model_json, xsl="review.xsl")
+    # TODO: execute_xslt(os.environ.get('RECORDS_PATH', '../data/records/') + id + '.cmdi', rating_model_json, xsl="review.xsl")
 
     data = {"status": "OK", "id": id}
     return jsonify(data)
@@ -146,14 +146,13 @@ def review_form(id):
 @app.post('/thumb/<id>')
 @authenticated
 def thumb_form(id):
-
     thumb_data = ReviewModel(**request.get_json())
     rating_data = {
         "reviews": [thumb_data]}
     rating_model = RatingModel(**rating_data)
     rating_model_json = rating_model.model_dump_json(by_alias=True)
 
-    execute_xslt(os.environ.get('RECORDS_PATH', '../data/records/') + id + '.cmdi', rating_model_json, xsl="thumbs.xsl")
+    # TODO: execute_xslt(os.environ.get('RECORDS_PATH', '../data/records/') + id + '.cmdi', rating_model_json, xsl="thumbs.xsl")
 
     data = {"status": "OK", "id": id}
     return jsonify(data)

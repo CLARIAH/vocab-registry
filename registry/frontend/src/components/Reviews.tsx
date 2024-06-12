@@ -15,8 +15,8 @@ export default function Reviews({data}: { data: Vocab }) {
     );
 }
 
-function ListReviews({reviews, pageId, author}: { reviews: Review[], pageId: number, author: string}) {
-    const [authEnabled, userInfo] = useAuth();
+function ListReviews({reviews, pageId}: { reviews: Review[], pageId: string}) {
+    const [_, userInfo] = useAuth();
     const handleButtonThumbClick = async (action: "LikeAction" | "DislikeAction", author: string) => {
         const response = await fetch(`/thumb/${pageId}`, {
             method: 'POST',
@@ -43,7 +43,6 @@ function ListReviews({reviews, pageId, author}: { reviews: Review[], pageId: num
     }
 
     return (
-
         <>
             {reviews.map(review => (
                 <div className="review" key={review.author}>
@@ -58,8 +57,7 @@ function ListReviews({reviews, pageId, author}: { reviews: Review[], pageId: num
     );
 }
 
-
-function AddReview({id, reviews}: { id: string, reviews: []}) {
+function AddReview({id, reviews}: { id: string, reviews: Review[]}) {
     const [authEnabled, userInfo] = useAuth();
 
     const handleRating = async (stars: number, text: string) => {
@@ -69,7 +67,7 @@ function AddReview({id, reviews}: { id: string, reviews: []}) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(
-                {"author": {"name": userInfo?.email},
+                {"author": {"name": userInfo?.email || 'fake@email.com'},
                     "reviewBody": text, "reviewRating": {"ratingValue": Number(stars)}
                 })
         });
