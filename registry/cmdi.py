@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from inspect import cleandoc
 from config import records_path
+from registry.rating import RatingModel
 
 ns = {"cmd": "http://www.clarin.eu/cmd/"}
 ns_prefix = '{http://www.clarin.eu/cmd/}'
@@ -27,6 +28,14 @@ xpath_version_no = "./cmd:version"
 xpath_valid_from = "./cmd:validFrom"
 
 xpath_location_elem = "./cmd:Location"
+xpath_review_elem = "./cmd:body"
+xpath_review_author_elem = "./cmd:author"
+xpath_review_blocked_elem = "./cmd:blocked"
+xpath_rating_elem = "./cmd:rating"
+# xpath_like_elem = "count(./cmd:like)"
+xpath_like_elem = "./cmd:like/text()"
+# xpath_dislike_elem = "count(./cmd:dislike)"
+xpath_dislike_elem = "./cmd:dislike/text()"
 xpath_namespace_elem = "./cmd:Namespaces/cmd:Namespace"
 xpath_namespace_item_elem = "./cmd:NamespaceItems/cmd:NamespaceItem"
 xpath_summary_elem = "./cmd:Summary"
@@ -48,6 +57,7 @@ xpath_title = f"({voc_root}/cmd:title[@xml:lang='en'][normalize-space(.)!=''],ba
 xpath_description = f"{voc_root}/cmd:Description/cmd:description"
 xpath_license = f"{voc_root}/cmd:License/cmd:url"
 xpath_publisher = f"{voc_root}/cmd:Assessement/cmd:Recommendation/cmd:Publisher"
+xpath_review = f"{voc_root}/cmd:Assessement/cmd:Review"
 xpath_location = f"{voc_root}/cmd:Location"
 xpath_version = f"{voc_root}/cmd:Version"
 
@@ -69,12 +79,11 @@ class Recommendation(BaseModel):
 
 
 class Review(BaseModel):
-    id: str
-    rating: int
+    author: str
     review: str
-    nickname: Optional[str] = None
-    moderation: Optional[str] = None
-    user: str
+    rating: int
+    like: Optional[list] = []
+    dislike: Optional[list] = []
 
 
 class Namespace(BaseModel):
@@ -205,6 +214,18 @@ def get_record(id: str) -> Vocab:
             recipe=grab_value(xpath_recipe, elem),
         )
 
+    def create_review_for(elem: Element) -> Review:
+        x = grab_value(xpath_review_blocked_elem, elem)
+        if x:
+            print(x)
+        return Review(
+            author=grab_value(xpath_review_author_elem, elem),
+            review=grab_value(xpath_review_elem, elem),
+            rating=grab_value(xpath_rating_elem, elem),
+            like=elementpath.select(elem, xpath_like_elem, ns),
+            dislike=elementpath.select(elem, xpath_dislike_elem, ns)
+        )
+
     def create_version(elem: Element) -> Version:
         summary_namespace = Namespace(
             uri=grab_value(xpath_summary_ns_uri, elem),
@@ -245,14 +266,6 @@ def get_record(id: str) -> Vocab:
     file = get_file_for_id(id)
     root = read_root(file)
 
-    f_reviews_path = os.environ.get('RECORDS_PATH', '../data/records/') + id + '-reviews.json'
-    if os.path.exists(f_reviews_path):
-        with open(f_reviews_path) as f:
-            f_content = f.read()
-            reviews_json = json.loads(f_content)
-    else:
-        reviews_json = []
-
     return Vocab(
         id=id,
         type=grab_value(xpath_vocab_type, root),
@@ -265,7 +278,8 @@ def get_record(id: str) -> Vocab:
         modified=datetime.utcfromtimestamp(os.path.getmtime(file)).isoformat(),
         locations=[create_location_for(elem)
                    for elem in elementpath.select(root, xpath_location, ns)],
-        reviews=[Review.model_validate(review) for review in reviews_json],
+        reviews=[create_review_for(elem)
+                 for elem in elementpath.select(root, xpath_review, ns) if not grab_value(xpath_review_blocked_elem, elem)],
         usage=Usage(count=0, outOf=0),
         recommendations=[Recommendation(publisher=grab_value(xpath_name, elem), rating=None)
                          for elem in elementpath.select(root, xpath_publisher, ns)],

@@ -7,6 +7,6 @@ python-dateutil==2.8.2
 lxml==5.1.0
 elementpath==4.4.0
 lorem-text==2.1
-jmespath==1.0.1
 rdflib == 7.0.0
 StrEnum == 0.4.15
+saxonche == 12.4.2

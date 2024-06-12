@@ -6,11 +6,13 @@ from flask_cors import CORS
 from flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
 from flask_pyoidc.user_session import UserSession
+from saxonche import PySaxonProcessor, PyXdmValue
 from werkzeug.http import parse_date
 from functools import wraps
 from elastic_index import Index
-from cmdi import get_record, create_basic_cmdi
+from cmdi import get_record, create_basic_cmdi, Review
 from config import secret_key, oidc_server, oidc_client_id, oidc_client_secret, oidc_redirect_uri
+from registry.rating import ReviewModel, RatingModel
 
 app = Flask(__name__, static_folder='frontend/dist', static_url_path='')
 app.config.update(
@@ -130,26 +132,46 @@ def proxy(recipe, id):
 @app.post('/review/<id>')
 @authenticated
 def review_form(id):
-    data = request.get_json()
-
-    f_reviews_path = os.environ.get('RECORDS_PATH', '../data/records/') + id + '-reviews.json'
-    if os.path.exists(f_reviews_path):
-        with open(f_reviews_path, "r+") as f:
-            f_content = f.read()
-            reviews_file_json = json.loads(f_content)
-            data.update({"id": str(len(reviews_file_json) + 1), "nickname": "", "moderation": ""})
-            reviews_file_json.append(data)
-            f.seek(0)
-            f.write(json.dumps(reviews_file_json))
-            f.truncate()
-    else:
-        data.update({"id": "1", "nickname": "", "moderation": ""})
-        reviews_file_json = [data]
-        with open(f_reviews_path, "w") as f:
-            f.write(json.dumps(reviews_file_json))
+    review = ReviewModel(**request.get_json())
+    rating_data = {
+        "reviews": [review]}
+    rating_model = RatingModel(**rating_data)
+    rating_model_json = rating_model.model_dump_json(by_alias=True)
+    execute_xslt(os.environ.get('RECORDS_PATH', '../data/records/') + id + '.cmdi', rating_model_json, xsl="review.xsl")
 
     data = {"status": "OK", "id": id}
     return jsonify(data)
+
+
+@app.post('/thumb/<id>')
+@authenticated
+def thumb_form(id):
+
+    thumb_data = ReviewModel(**request.get_json())
+    rating_data = {
+        "reviews": [thumb_data]}
+    rating_model = RatingModel(**rating_data)
+    rating_model_json = rating_model.model_dump_json(by_alias=True)
+
+    execute_xslt(os.environ.get('RECORDS_PATH', '../data/records/') + id + '.cmdi', rating_model_json, xsl="thumbs.xsl")
+
+    data = {"status": "OK", "id": id}
+    return jsonify(data)
+
+
+def execute_xslt(f_record_path, rating_model_json, xsl):
+    with PySaxonProcessor(license=False) as proc:
+        xsltproc = proc.new_xslt30_processor()
+        xsltproc.set_cwd(os.getcwd())
+        executable = xsltproc.compile_stylesheet(stylesheet_file=xsl)
+        value = PyXdmValue()
+        value.add_xdm_item(proc.make_string_value(rating_model_json))
+        executable.set_parameter("json", value)
+        result = executable.apply_templates_returning_string(source_file=f_record_path)
+
+        with open(f_record_path, "r+") as f:
+            f.seek(0)
+            f.write(result)
 
 
 if __name__ == '__main__':
