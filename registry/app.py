@@ -12,7 +12,7 @@ from functools import wraps
 from elastic_index import Index
 from cmdi import get_record, create_basic_cmdi, Review
 from config import secret_key, oidc_server, oidc_client_id, oidc_client_secret, oidc_redirect_uri
-from registry.rating import ReviewModel, RatingModel
+from rating import ReviewModel, RatingModel
 
 app = Flask(__name__, static_folder='frontend/dist', static_url_path='')
 app.config.update(
