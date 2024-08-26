@@ -20,11 +20,11 @@ export interface Vocab {
 }
 
 export interface Review {
-    author: string;
+    id: number;
     review: string;
     rating: number;
-    like: any[];
-    dislike: any[];
+    likes: number;
+    dislikes: number;
 }
 
 export interface VocabLocation {

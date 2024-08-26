@@ -3,7 +3,7 @@ import elementpath
 import unicodedata
 
 from lxml import etree
-from datetime import datetime
+from datetime import datetime, UTC
 from lxml.etree import Element
 from pydantic import BaseModel
 from typing import Optional, List
@@ -28,10 +28,10 @@ xpath_valid_from = "./cmd:validFrom"
 xpath_location_elem = "./cmd:Location"
 xpath_review_elem = "./cmd:body"
 xpath_review_author_elem = "./cmd:author"
-xpath_review_blocked_elem = "./cmd:blocked"
+xpath_review_status_elem = "./cmd:status"
 xpath_rating_elem = "./cmd:rating"
-xpath_like_elem = "./cmd:like/text()"
-xpath_dislike_elem = "./cmd:dislike/text()"
+xpath_like_elem = "./cmd:like"
+xpath_dislike_elem = "./cmd:dislike"
 xpath_namespace_elem = "./cmd:Namespaces/cmd:Namespace"
 xpath_namespace_item_elem = "./cmd:NamespaceItems/cmd:NamespaceItem"
 xpath_summary_elem = "./cmd:Summary"
@@ -56,6 +56,7 @@ xpath_publisher = f"{voc_root}/cmd:Assessement/cmd:Recommendation/cmd:Publisher"
 xpath_review = f"{voc_root}/cmd:Assessement/cmd:Review"
 xpath_location = f"{voc_root}/cmd:Location"
 xpath_version = f"{voc_root}/cmd:Version"
+xpath_assessment = f"{voc_root}/cmd:Assessement"
 
 
 class Location(BaseModel):
@@ -75,11 +76,11 @@ class Recommendation(BaseModel):
 
 
 class Review(BaseModel):
-    author: str
+    id: int
     review: str
     rating: int
-    like: Optional[list] = []
-    dislike: Optional[list] = []
+    likes: int
+    dislikes: int
 
 
 class Namespace(BaseModel):
@@ -143,6 +144,12 @@ class Vocab(BaseModel):
     usage: Usage
     recommendations: List[Recommendation]
     versions: List[Version]
+
+
+class ReviewsUserInteraction(BaseModel):
+    authored: List[int]
+    likes: List[int]
+    dislikes: List[int]
 
 
 def get_file_for_id(id: str) -> str:
@@ -210,13 +217,13 @@ def get_record(id: str) -> Vocab:
             recipe=grab_value(xpath_recipe, elem),
         )
 
-    def create_review_for(elem: Element) -> Review:
+    def create_review_for(id: int, elem: Element) -> Review:
         return Review(
-            author=grab_value(xpath_review_author_elem, elem),
+            id=id,
             review=grab_value(xpath_review_elem, elem),
             rating=grab_value(xpath_rating_elem, elem),
-            like=elementpath.select(elem, xpath_like_elem, ns),
-            dislike=elementpath.select(elem, xpath_dislike_elem, ns)
+            likes=len(elementpath.select(elem, xpath_like_elem, ns)),
+            dislikes=len(elementpath.select(elem, xpath_dislike_elem, ns))
         )
 
     def create_version(elem: Element) -> Version:
@@ -267,12 +274,13 @@ def get_record(id: str) -> Vocab:
         license=grab_value(xpath_license, root) or 'http://rightsstatements.org/vocab/UND/1.0/',
         versioningPolicy=None,
         sustainabilityPolicy=None,
-        created=datetime.utcfromtimestamp(os.path.getctime(file)).isoformat(),
-        modified=datetime.utcfromtimestamp(os.path.getmtime(file)).isoformat(),
+        created=datetime.fromtimestamp(os.path.getctime(file), UTC).isoformat(),
+        modified=datetime.fromtimestamp(os.path.getmtime(file), UTC).isoformat(),
         locations=[create_location_for(elem)
                    for elem in elementpath.select(root, xpath_location, ns)],
-        reviews=[create_review_for(elem)
-                 for elem in elementpath.select(root, xpath_review, ns) if not grab_value(xpath_review_blocked_elem, elem)],
+        reviews=[create_review_for(i+1, elem)
+                 for i, elem in enumerate(elementpath.select(root, xpath_review, ns))
+                 if grab_value(xpath_review_status_elem, elem) == 'published'],
         usage=Usage(count=0, outOf=0),
         recommendations=[Recommendation(publisher=grab_value(xpath_name, elem), rating=None)
                          for elem in elementpath.select(root, xpath_publisher, ns)],
@@ -281,5 +289,87 @@ def get_record(id: str) -> Vocab:
     )
 
 
+def get_reviews_user_interaction(id: str, user: str) -> ReviewsUserInteraction:
+    file = get_file_for_id(id)
+    root = read_root(file)
+
+    authored = [i + 1
+                for i, elem in enumerate(elementpath.select(root, xpath_review, ns))
+                if user == grab_value(xpath_review_author_elem, elem)]
+
+    likes = [i + 1
+             for i, elem in enumerate(elementpath.select(root, xpath_review, ns))
+             if user in [unicodedata.normalize("NFKC", like_elem.text)
+                         for like_elem in elementpath.select(elem, xpath_like_elem, ns)]]
+
+    dislikes = [i + 1
+                for i, elem in enumerate(elementpath.select(root, xpath_review, ns))
+                if user in [unicodedata.normalize("NFKC", dislike_elem.text)
+                            for dislike_elem in elementpath.select(elem, xpath_dislike_elem, ns)]]
+
+    return ReviewsUserInteraction(authored=authored, likes=likes, dislikes=dislikes)
+
+
 def create_basic_cmdi(title: str, homepage: str, description: str):
     return True
+
+
+def add_review_to_cmdi(id: str, author: str, body: str, rating: int):
+    file = get_file_for_id(id)
+    root = read_root(file)
+
+    assessment_elem = grab_first(xpath_assessment, root)
+    review_elem = etree.SubElement(assessment_elem, f"{ns_prefix}Review", nsmap=ns)
+
+    status_elem = etree.SubElement(review_elem, f"{ns_prefix}status", nsmap=ns)
+    status_elem.text = 'new'
+
+    author_elem = etree.SubElement(review_elem, f"{ns_prefix}author", nsmap=ns)
+    author_elem.text = author
+
+    published_elem = etree.SubElement(review_elem, f"{ns_prefix}published", nsmap=ns)
+    published_elem.text = datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')
+
+    body_elem = etree.SubElement(review_elem, f"{ns_prefix}body", nsmap=ns)
+    body_elem.text = body
+
+    rating_elem = etree.SubElement(review_elem, f"{ns_prefix}rating", nsmap=ns)
+    rating_elem.text = str(rating)
+
+    write_root(file, root)
+
+
+def persist_review_like_to_cmdi(id: str, review_no: int, user: str, is_like: bool):
+    file = get_file_for_id(id)
+    root = read_root(file)
+
+    found_review = False
+    for i, elem in enumerate(elementpath.select(root, xpath_review, ns)):
+        if i + 1 == review_no:
+            found_review = True
+            should_add_like = is_like
+            should_add_dislike = not is_like
+
+            for like_elem in elementpath.select(elem, xpath_like_elem, ns):
+                if unicodedata.normalize("NFKC", like_elem.text) == user:
+                    elem.remove(like_elem)
+                    if is_like:
+                        should_add_like = False
+
+            for dislike_elem in elementpath.select(elem, xpath_dislike_elem, ns):
+                if unicodedata.normalize("NFKC", dislike_elem.text) == user:
+                    elem.remove(dislike_elem)
+                    if not is_like:
+                        should_add_dislike = False
+
+            if should_add_like:
+                like_elem = etree.SubElement(elem, f"{ns_prefix}like", nsmap=ns)
+                like_elem.text = user
+            elif should_add_dislike:
+                dislike_elem = etree.SubElement(elem, f"{ns_prefix}dislike", nsmap=ns)
+                dislike_elem.text = user
+
+    if found_review:
+        write_root(file, root)
+    else:
+        raise ValueError(f"Review {review_no} not found for {id}")

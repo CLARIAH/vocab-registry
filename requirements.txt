@@ -1,11 +1,7 @@
-flask==3.0.2
-flask-cors==4.0.0
+flask==3.0.3
+flask-cors==4.0.1
 flask-pyoidc==3.14.3
-pydantic==2.6.4
-elasticsearch==8.12.1
-python-dateutil==2.8.2
-lxml==5.1.0
+pydantic==2.8.2
+elasticsearch==8.15.0
+lxml==5.3.0
 elementpath==4.4.0
-lorem-text==2.1
-rdflib==7.0.0
-saxonche==12.4.2

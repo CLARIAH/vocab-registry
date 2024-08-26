@@ -1,18 +1,14 @@
-import os
-import json
-
 from flask import Flask, request, jsonify, abort, redirect, session
 from flask_cors import CORS
 from flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
 from flask_pyoidc.user_session import UserSession
-from saxonche import PySaxonProcessor, PyXdmValue
 from werkzeug.http import parse_date
 from functools import wraps
 from elastic_index import Index
-from cmdi import get_record, create_basic_cmdi, Review
+from cmdi import get_record, create_basic_cmdi, add_review_to_cmdi, \
+    persist_review_like_to_cmdi, get_reviews_user_interaction
 from config import secret_key, oidc_server, oidc_client_id, oidc_client_secret, oidc_redirect_uri
-from rating import ReviewModel, RatingModel
 
 app = Flask(__name__, static_folder='frontend/dist', static_url_path='')
 app.config.update(
@@ -27,10 +23,20 @@ auth = OIDCAuthentication({'default': ProviderConfiguration(
     client_metadata=ClientMetadata(
         client_id=oidc_client_id,
         client_secret=oidc_client_secret),
-    auth_request_params={'scope': ['openid', 'email', 'profile']},
+    auth_request_params={'scope': ['openid', 'email', 'profile'],
+                         'claims': {'userinfo': {'nickname': None, 'email': None, 'eppn': None}}}
 )}, app) if oidc_server is not None else None
 
 index = Index()
+
+
+def get_user_id():
+    user_session = UserSession(session, 'default')
+    if 'eppn' in user_session.userinfo:
+        eppn = user_session.userinfo['eppn']
+        return eppn[0] if type(eppn) == list else eppn
+
+    return user_session.userinfo['sub']
 
 
 def authenticated(func):
@@ -90,6 +96,7 @@ def get_vocab(id):
 
 
 @app.post('/vocab/new')
+@authenticated
 def post_vocab():
     if 'title' in request.values and 'homepage' in request.values and 'description' in request.values:
         if create_basic_cmdi(request.values['title'], request.values['homepage'], request.values['description']):
@@ -97,6 +104,49 @@ def post_vocab():
             return jsonify(success=True), 201
 
     return jsonify(success=False), 400
+
+
+@app.post('/review/<id>')
+@authenticated
+def post_review(id):
+    if 'body' in request.values and 'rating' in request.values:
+        user_id = get_user_id()
+        add_review_to_cmdi(id, user_id, request.values['body'], int(request.values['rating']))
+        return jsonify(success=True), 201
+
+    return jsonify(success=False), 400
+
+
+@app.get('/reviews_user_interaction/<id>')
+@authenticated
+def reviews_user_interaction(id):
+    user_id = get_user_id()
+    return jsonify(get_reviews_user_interaction(id, user_id).model_dump())
+
+
+@app.post('/review/<id>/report')
+def report_abuse(id):
+    if 'name' in request.values and 'email' in request.values and 'description' in request.values:
+        # TODO: send email
+        return jsonify(success=True), 200
+
+    return jsonify(success=False), 400
+
+
+@app.post('/like/<id>/<int:review_no>')
+@authenticated
+def post_like(id, review_no):
+    user_id = get_user_id()
+    persist_review_like_to_cmdi(id, review_no, user_id, True)
+    return jsonify(success=True)
+
+
+@app.post('/dislike/<id>/<int:review_no>')
+@authenticated
+def post_dislike(id, review_no):
+    user_id = get_user_id()
+    persist_review_like_to_cmdi(id, review_no, user_id, False)
+    return jsonify(success=True)
 
 
 @app.get('/proxy/<recipe>/<id>')
@@ -127,50 +177,6 @@ def proxy(recipe, id):
         abort(404)
 
     return redirect(redirect_uri, code=302)
-
-
-@app.post('/review/<id>')
-@authenticated
-def review_form(id):
-    review = ReviewModel(**request.get_json())
-    rating_data = {
-        "reviews": [review]}
-    rating_model = RatingModel(**rating_data)
-    rating_model_json = rating_model.model_dump_json(by_alias=True)
-    # TODO: execute_xslt(os.environ.get('RECORDS_PATH', '../data/records/') + id + '.cmdi', rating_model_json, xsl="review.xsl")
-
-    data = {"status": "OK", "id": id}
-    return jsonify(data)
-
-
-@app.post('/thumb/<id>')
-@authenticated
-def thumb_form(id):
-    thumb_data = ReviewModel(**request.get_json())
-    rating_data = {
-        "reviews": [thumb_data]}
-    rating_model = RatingModel(**rating_data)
-    rating_model_json = rating_model.model_dump_json(by_alias=True)
-
-    # TODO: execute_xslt(os.environ.get('RECORDS_PATH', '../data/records/') + id + '.cmdi', rating_model_json, xsl="thumbs.xsl")
-
-    data = {"status": "OK", "id": id}
-    return jsonify(data)
-
-
-def execute_xslt(f_record_path, rating_model_json, xsl):
-    with PySaxonProcessor(license=False) as proc:
-        xsltproc = proc.new_xslt30_processor()
-        xsltproc.set_cwd(os.getcwd())
-        executable = xsltproc.compile_stylesheet(stylesheet_file=xsl)
-        value = PyXdmValue()
-        value.add_xdm_item(proc.make_string_value(rating_model_json))
-        executable.set_parameter("json", value)
-        result = executable.apply_templates_returning_string(source_file=f_record_path)
-
-        with open(f_record_path, "r+") as f:
-            f.seek(0)
-            f.write(result)
 
 
 if __name__ == '__main__':

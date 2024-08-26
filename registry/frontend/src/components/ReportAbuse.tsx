@@ -1,129 +1,96 @@
-import React from 'react';
+import {FormEventHandler} from 'react';
+import {FieldErrors, useForm, UseFormRegister} from 'react-hook-form';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Cross2Icon } from '@radix-ui/react-icons';
-import {Text, TextArea} from "@radix-ui/themes";
-import * as Checkbox from '@radix-ui/react-checkbox';
-import { CheckIcon } from '@radix-ui/react-icons';
+import useFormSubmissionState, {FormSubmissionState} from '../hooks/useFormSubmission';
+import {UserInfo} from '../hooks/useAuth';
+import Modal from '../misc/Modal';
 
-const ReportAbuse = ({url_target}: {url_target: string}) =>{
-const [open, setOpen] = React.useState(false);
+interface ReportAbuseInputs {
+    name: string;
+    email: string;
+    description: string;
+}
+
+export default function ReportAbuse({id, userInfo}: { id: string, userInfo: UserInfo | null }) {
+    return (
+        <Modal triggerElement={<button className="hcButton">Report abuse</button>}>
+            <ReportAbuseModalContent id={id} userInfo={userInfo}/>
+        </Modal>
+    );
+}
+
+function ReportAbuseModalContent({id, userInfo}: { id: string, userInfo: UserInfo | null }) {
+    const [state, onSubmit, StatusModal] = useFormSubmissionState(onReportAbuseSubmit);
+    const {
+        register,
+        formState: {errors},
+        handleSubmit
+    } = useForm<ReportAbuseInputs>();
+
+    async function onReportAbuseSubmit(data: ReportAbuseInputs) {
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('email', data.email);
+        formData.append('description', data.description);
+
+        return fetch(`/review/${id}/report`, {
+            method: 'POST',
+            body: formData,
+        });
+    }
 
     return (
-  <Dialog.Root open={open} onOpenChange={setOpen}>
-    <Dialog.Trigger asChild>
-      <button className="Button">Report Abuse</button>
-    </Dialog.Trigger>
-    <Dialog.Portal>
-      <Dialog.Overlay className="DialogOverlay" />
-      <Dialog.Content className="DialogContent">
-         <form
-            onSubmit={async (event) => {
-                const data = Object.fromEntries(new FormData(event.currentTarget));
-                let subject = ""
-                if (data["abuse"]=='on') {
-                    subject = "Abuse or Inappropriate content. "
-                }
-                if (data["copyright"]=='on') {
-                    subject = subject + "Copyright Issue. "
-                }
-                if (data["illegal"]=='on') {
-                    subject = subject + "Illegal Content. "
-                }
-                // alert(subject)
-                let result = await fetch(url_target, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    },
-                    body: JSON.stringify({
-                        "user": "eko",
-                        "mail": data["email"],
-                        "text": data["text"],
-                        "subject": subject
+        <StatusModal success="Your report has been submitted!">
+            <ReportAbuseForm userInfo={userInfo} register={register} errors={errors}
+                             isDisabled={state === FormSubmissionState.WAITING}
+                             onSubmit={handleSubmit(onSubmit)}/>
+        </StatusModal>
+    );
+}
 
-                    })
-
-
-                }).then(response => {
-                    console.log(response.status)
-                })
-
-                event.preventDefault();
-            }}
-          >
-            {/** some inputs */}
-
-
-
-
-        <Dialog.Title className="DialogTitle">Report Abuse or Inappropriate Content</Dialog.Title>
-        <Dialog.Description className="DialogDescription">
-          Report Abuse or Inappropriate Content.
-          In case of abuse or inappropriate content is found, please inform site owners via this form.
-        </Dialog.Description>
-        <fieldset className="Fieldset">
-          <label className="Label" htmlFor="name">
-            Name
-          </label>
-          <input className="Input" name="name" id="name" defaultValue="Fill in from user login" />
-        </fieldset>
-        <fieldset className="Fieldset">
-          <label className="Label" htmlFor="email">
-            email
-          </label>
-          <input className="Input" name="email" id="email" defaultValue="email@login" />
-        </fieldset>
-         <h4>
-            Type of abuse
-          </h4>
-
-
-         <CustomCheckbox label="Abuse or Inappropriate content" id="abuse" />
-         <CustomCheckbox label="Copyrighted material" id="copyright" />
-         <CustomCheckbox label="Illegal Content" id="illegal" />
-
-        <fieldset className="Fieldset">
-          <label className="Label" htmlFor="email">
-            Why is the content inappropriate?
-          </label>
-          <TextArea color="blue" variant="soft" name="text" placeholder="" rows={10} cols={32} />
-        </fieldset>
-          <Text></Text>
-
-        <div style={{ display: 'flex', marginTop: 25, justifyContent: 'flex-end' }}>
-            <button type="submit" className="Button green">Submit</button>
-        </div>
-
-          </form>
-        <Dialog.Close asChild>
-
-          <button className="IconButton" aria-label="Close">
-            <Cross2Icon />
-          </button>
-        </Dialog.Close>
-
-      </Dialog.Content>
-    </Dialog.Portal>
-  </Dialog.Root>
-)};
-
-export default ReportAbuse;
-
-const CustomCheckbox = ({label, id}: {label:string, id: string}) => {
+function ReportAbuseForm({isDisabled, userInfo, register, errors, onSubmit}: {
+    isDisabled: boolean,
+    userInfo: UserInfo | null,
+    register: UseFormRegister<ReportAbuseInputs>,
+    errors: FieldErrors<ReportAbuseInputs>,
+    onSubmit: FormEventHandler
+}) {
     return (
-        <div>
-          <div style={{ display: 'flex'}}>
-      <Checkbox.Root className="CheckboxRoot" name={id} id={id}>
-        <Checkbox.Indicator className="CheckboxIndicator">
-          <CheckIcon />
-        </Checkbox.Indicator>
-      </Checkbox.Root>
-              <label className="Label" htmlFor={id} style={{width: 'auto', marginLeft: '10px'}}>
-            {label}
-          </label>
-              </div>
-              </div>
+        <>
+            <Dialog.Title className="DialogTitle">
+                Report abuse or inappropriate content
+            </Dialog.Title>
+
+            <Dialog.Description className="DialogDescription">
+                In case of abuse or inappropriate content is found, please inform site owners via this form
+            </Dialog.Description>
+
+            <form onSubmit={onSubmit}>
+                <fieldset disabled={isDisabled}>
+                    <label className={errors.name ? 'error' : ''}>
+                        Name
+                        <input {...register('name', {required: true})}
+                               type="text" placeholder={userInfo?.nickname}/>
+                    </label>
+
+                    <label className={errors.email ? 'error' : ''}>
+                        E-mail
+                        <input {...register('email', {required: true})}
+                               type="email" placeholder={userInfo?.email}/>
+                    </label>
+
+                    <label className={errors.description ? 'error' : ''}>
+                        Why is the content inappropriate?
+                        <textarea {...register('description', {required: true})}/>
+                    </label>
+
+                    <div className="center">
+                        <button type="submit" className="hcButton">
+                            Submit
+                        </button>
+                    </div>
+                </fieldset>
+            </form>
+        </>
     )
 }

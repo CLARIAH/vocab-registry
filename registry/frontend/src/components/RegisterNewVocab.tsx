@@ -1,19 +1,15 @@
-import React, {ChangeEvent, FormEventHandler, useState} from 'react';
+import {ChangeEvent, FormEventHandler} from 'react';
+import {FieldErrors, useForm, UseFormRegister, UseFormSetValue, UseFormWatch} from 'react-hook-form';
 import * as Dialog from '@radix-ui/react-dialog';
 import MDEditor from '@uiw/react-md-editor';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faCheck, faTriangleExclamation} from '@fortawesome/free-solid-svg-icons';
-import {FieldErrors, useForm, UseFormRegister, UseFormSetValue, UseFormWatch} from 'react-hook-form';
+import useFormSubmissionState, {FormSubmissionState} from '../hooks/useFormSubmission';
+import useAuth from '../hooks/useAuth';
 import Modal from '../misc/Modal.js';
 
 interface NewVocabInputs {
     title: string;
     homepage: string;
     description: string;
-}
-
-enum FormSubmissionState {
-    INITIAL, WAITING, SUCCESS, FAILED
 }
 
 export default function RegisterNewVocab() {
@@ -25,7 +21,8 @@ export default function RegisterNewVocab() {
 }
 
 function RegisterNewVocabModalContent() {
-    const [state, setState] = useState<FormSubmissionState>(FormSubmissionState.INITIAL);
+    const [authEnabled, userInfo] = useAuth();
+    const [state, onSubmit, StatusModal] = useFormSubmissionState(onNewVocabInputsSubmit);
     const {
         register,
         formState: {errors},
@@ -34,30 +31,46 @@ function RegisterNewVocabModalContent() {
         handleSubmit
     } = useForm<NewVocabInputs>();
 
-    async function onSubmit(data: NewVocabInputs) {
-        setState(FormSubmissionState.WAITING);
-
+    async function onNewVocabInputsSubmit(data: NewVocabInputs) {
         const formData = new FormData();
         formData.append('title', data.title);
         formData.append('homepage', data.homepage);
         formData.append('description', data.description);
 
-        const result = await fetch('/vocab/new', {
+        return fetch('/vocab/new', {
             method: 'POST',
             body: formData,
         });
-
-        setState(result.ok ? FormSubmissionState.SUCCESS : FormSubmissionState.FAILED);
     }
+
+    if (authEnabled && !userInfo)
+        return <LoginMessage/>
+
+    return (
+        <StatusModal success="Your vocabulary has been submitted!">
+            <RegisterNewVocabForm register={register} errors={errors} watch={watch} setValue={setValue}
+                                  isDisabled={state === FormSubmissionState.WAITING}
+                                  onSubmit={handleSubmit(onSubmit)}/>
+        </StatusModal>
+    );
+}
+
+function LoginMessage() {
+    const redirectUri = `/login?redirect-uri=${encodeURIComponent(window.location.href)}`;
 
     return (
         <>
-            {[FormSubmissionState.INITIAL, FormSubmissionState.WAITING].includes(state) &&
-                <RegisterNewVocabForm isDisabled={state === FormSubmissionState.WAITING}
-                                      register={register} errors={errors} watch={watch} setValue={setValue}
-                                      onSubmit={handleSubmit(onSubmit)}/>}
-            {[FormSubmissionState.SUCCESS, FormSubmissionState.FAILED].includes(state) &&
-                <Result success={state === FormSubmissionState.SUCCESS}/>}
+            <Dialog.Title className="DialogTitle">Login required</Dialog.Title>
+
+            <Dialog.Description className="DialogDescription">
+                You need to login first to register a new vocabulary.
+            </Dialog.Description>
+
+            <div className="center">
+                <a className="hcButton" href={redirectUri}>
+                    Log in
+                </a>
+            </div>
         </>
     );
 }
@@ -111,18 +124,5 @@ function RegisterNewVocabForm({isDisabled, register, errors, watch, setValue, on
                 </fieldset>
             </form>
         </>
-    );
-}
-
-function Result({success}: { success: boolean }) {
-    return (
-        <div className="center">
-            <FontAwesomeIcon icon={success ? faCheck : faTriangleExclamation} size="4x"
-                             className={success ? 'success' : 'failure'}/>
-
-            <Dialog.Description className="DialogDescription">
-                {success ? 'Your vocabulary has been submitted!' : 'Something went wrong, please try again later!'}
-            </Dialog.Description>
-        </div>
     );
 }

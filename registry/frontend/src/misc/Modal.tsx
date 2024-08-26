@@ -3,9 +3,13 @@ import * as Dialog from '@radix-ui/react-dialog';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faXmark} from '@fortawesome/free-solid-svg-icons';
 
-export default function Modal({triggerElement, children}: { triggerElement: ReactElement, children: ReactElement }) {
+export default function Modal({triggerElement, children, onClose}: {
+    triggerElement: ReactElement,
+    children: ReactElement,
+    onClose?: () => void
+}) {
     return (
-        <Dialog.Root>
+        <Dialog.Root onOpenChange={open => !open && onClose && onClose()}>
             <Dialog.Trigger asChild>
                 {triggerElement}
             </Dialog.Trigger>
