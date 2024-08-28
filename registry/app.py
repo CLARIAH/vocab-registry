@@ -5,10 +5,10 @@ from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMet
 from flask_pyoidc.user_session import UserSession
 from werkzeug.http import parse_date
 from functools import wraps
-from elastic_index import Index
-from cmdi import get_record, create_basic_cmdi, add_review_to_cmdi, \
+from registry.elastic_index import Index
+from registry.cmdi import get_record, create_basic_cmdi, add_review_to_cmdi, \
     persist_review_like_to_cmdi, get_reviews_user_interaction
-from config import secret_key, oidc_server, oidc_client_id, oidc_client_secret, oidc_redirect_uri
+from registry.config import secret_key, oidc_server, oidc_client_id, oidc_client_secret, oidc_redirect_uri
 
 app = Flask(__name__, static_folder='frontend/dist', static_url_path='')
 app.config.update(

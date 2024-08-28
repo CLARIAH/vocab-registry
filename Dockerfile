@@ -1,7 +1,7 @@
 FROM node:alpine as frontend-build
 
 WORKDIR /app
-COPY ./registry/frontend/ /app
+COPY registry/frontend/ /app
 RUN npm install && npm run build
 
 FROM python:3.12-slim
@@ -9,14 +9,17 @@ FROM python:3.12-slim
 ENV PYTHONPATH /app
 ENV PYTHONUNBUFFERED 1
 
-WORKDIR /app
-COPY ./registry/ /app
-COPY ./requirements.txt /app
-COPY --from=frontend-build /app/dist /app/frontend/dist
+RUN pip3 install poetry
 
-RUN pip3 install --trusted-host pypi.python.org -r /app/requirements.txt &&\
-    pip3 install --trusted-host pypi.python.org gunicorn
+WORKDIR /app
+COPY pyproject.toml /app
+
+RUN poetry config virtualenvs.create false && \
+    poetry install --with prod
+
+COPY registry /app/registry
+COPY --from=frontend-build /app/dist /app/registry/frontend/dist
 
 EXPOSE 5000
 
-CMD ["gunicorn", "-b", ":5000", "-t", "60", "-w", "4", "app:app"]
+CMD ["gunicorn", "-b", ":5000", "-t", "60", "-w", "4", "registry.app:app"]

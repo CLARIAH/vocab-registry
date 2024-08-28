@@ -2,7 +2,8 @@ import math
 import string
 
 from elasticsearch import Elasticsearch
-from config import es_host, es_user, es_password, es_index
+
+from registry.config import es_host, es_user, es_password, es_index
 
 
 class Index:
