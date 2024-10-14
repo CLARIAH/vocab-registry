@@ -10,11 +10,11 @@ The FAIR vocabularies project pursues the goal of gathering vocabularies that ar
 The project aligns to other international initiatives that aim to increase the FAIR-ness (Findability, Accessibility, Reproducibility and Interoperability) of research data or cultural heritage metadata, in this case with a focus on semantic artefacts (controlled vocabularies or any other knowledge organization system, such as authority lists, taxonomies, thesauri, classification schemes, or schemas and abstract models such as ontologies (see for example Zeng, 2008).
 
 What distinguishes this FAIR vocabulary registry from similar international initiatives is that it aims to:
-- (1) do semi-automatic curation work, which include automatic processes in the selection and processing, but also involves the community of experts in the selection and curation of the vocabularies,
-- (2) serve a clear user group, which gives advantages when selecting vocabularies to include and datasets to link to; also to have a closer relation with users during the development and evaluation of the registry;
-- (3) formalize the characteristics that make a vocabulary FAIR,
-- (4) widen the scope to make room for vocabularies that are not only RDF-based;
-- (5) it will find relations between the vocabularies and the dataset registries used by these communities to see which vocabularies were used in those datasets (to get statistics about vocabulary use), it will collect user reviews, and provide recommendations to encourage vocabulary reuse.
+- do semi-automatic curation work, which include automatic processes in the selection and processing, but also involves the community of experts in the selection and curation of the vocabularies,
+- serve a clear user group, which gives advantages when selecting vocabularies to include and datasets to link to; also to have a closer relation with users during the development and evaluation of the registry;
+- formalize the characteristics that make a vocabulary FAIR,
+- widen the scope to make room for vocabularies that are not only RDF-based;
+- it will find relations between the vocabularies and the dataset registries used by these communities to see which vocabularies were used in those datasets (to get statistics about vocabulary use), it will collect user reviews, and provide recommendations to encourage vocabulary reuse.
 
 ## Development roadmap
 The project started during the CLARIAH Plus project. It continues during SSHOC.nl (2).
