@@ -79,9 +79,9 @@ A complete description of the architecture can be found in the paper by Meijer &
 - Zeng, M.L. (2008). Knowledge Organization Systems (KOS). Knowledge Organization, 35, 160-182. https://doi.org/10.5771/0943-7444-2008-2-3-160
 
 # FOOTNOTES
-(1) CLARIAH: Common Lab Research Infrastructure for the Arts and Humanities (https://www.clariah.nl/)
-(2) CLARIN: Common Language Resources and Technology Infrastructure (https://www.clarin.eu/)
-(3) SSHOC.nl: Digital Infrastructure for Social Sciences and Humanities (https://sshoc.nl/)
+- (1) CLARIAH: Common Lab Research Infrastructure for the Arts and Humanities (https://www.clariah.nl/)
+- (2) CLARIN: Common Language Resources and Technology Infrastructure (https://www.clarin.eu/)
+- (3) SSHOC.nl: Digital Infrastructure for Social Sciences and Humanities (https://sshoc.nl/)
 
 # CREDITS
 - Ideation and project management: Menzo Windhouwer (lead software engineer at the KNAW Humanities Cluster)
