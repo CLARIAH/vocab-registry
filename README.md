@@ -7,7 +7,7 @@ This repository contains code and documentation of the CLARIAH (1) (continued by
 ## Introduction
 The FAIR vocabularies project pursues the goal of gathering vocabularies that are relevant to researchers, developers, or curators in the humanities and social sciences who are connected to both the CLARIN (3), CLARIAH (2) and SSHOC.nl (2) communities. The results of this project convey in a "vocabulary registry", which is a one-stop reference service for vocabularies useful to these communities or created during any of their projects.
 
-The project aligns to other international initiatives that aim to increase the FAIR-ness (Findability, Accessibility, Reproducibility and Interoperability) of research data or cultural heritage metadata, in this case with a focus on semantic artefacts (controlled vocabularies or any other knowledge organization system, such as authority lists, taxonomies, thesauri, classification schemes, or schemas and abstract models such as ontologies.
+The project aligns to other international initiatives that aim to increase the FAIR-ness (Findability, Accessibility, Reproducibility and Interoperability) of research data or cultural heritage metadata, in this case with a focus on semantic artefacts (controlled vocabularies or any other knowledge organization system, such as authority lists, taxonomies, thesauri, classification schemes, or schemas and abstract models such as ontologies (see for example Zeng, 2008).
 
 What distinguishes this FAIR vocabulary registry from similar international initiatives is that it aims to:
 - (1) do semi-automatic curation work, which include automatic processes in the selection and processing, but also involves the community of experts in the selection and curation of the vocabularies,
@@ -45,17 +45,17 @@ If you want to use the registry for searching and browsing you can make use of t
 ## 1. Intro
 The vocabulary registry has different components:
 
-![alt text](https://github.com/CLARIAH/vocab-registry/blob/main/documentation/cac.png?raw=true)
+![FAIR vocabulary registry architecture](https://github.com/CLARIAH/vocab-registry/blob/6-update-readme-file/documentation/cac.png?raw=true)
 (Source: Meijer & Windhower, 2024)
 
-A complete description of the architecture can be found in the paper by Meijer & Windower (2024) (see References below). This is a summary of the different components:
+A complete description of the architecture can be found in the paper by Meijer & Windower (2024). This is a summary of the different components:
 
 - The Editor: it's built based on a CMDI (Clarin metadata infrastructure) profile, it serves the purpose to add descriptive metadata to the vocabularies
    - See the code at this Github repository: (forthcoming)
    - The CMDI profile can also be accessed as a FAIR vocabulary via the registry: (forthcoming; temporarily you can see the data model here: https://github.com/CLARIAH/vocab-registry/blob/ec430d55d5c76345e4f25b5726ea84600c96d522/documentation/model.plantuml)
       - The editing process is done semi-automatically.
 
-- The Workers: see the code at this Github repository: https://github.com/CLARIAH/vocab-workers). These are python-based applications that perform each of the tasks that build the registry, i.e.,: downloading/caching the vocabulary, summarizing, storing in a SPARQL store, converting to RDF, uploading to Skosmos (if it is a SKOS vocabulary), documenting, or finding if the vocabulary is also registered in other vocabulary registries.
+- The Workers: see the code at this Github repository: https://github.com/CLARIAH/vocab-workers). These are python-based applications that perform each of the tasks that build the registry, i.e.,: downloading/caching the vocabulary, summarizing, storing in a SPARQL store, converting to RDF, uploading to SKOSMOS (if it is a SKOS vocabulary), documenting, or finding if the vocabulary is also registered in other vocabulary registries.
 
 - The interface (see the code at this Github repository: https://github.com/CLARIAH/vocab-registry). There are two components:
    - a) A python layer for the API
