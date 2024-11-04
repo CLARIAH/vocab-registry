@@ -2,7 +2,7 @@ import os
 import uuid
 
 secret_key = os.environ.get('SECRET_KEY', uuid.uuid4().hex)
-records_path = os.environ.get('RECORDS_PATH', '../data/records/')
+records_path = os.environ.get('RECORDS_PATH', './data/records/')
 
 oidc_server = os.environ.get('OIDC_SERVER')
 oidc_client_id = os.environ.get('OIDC_CLIENT_ID')

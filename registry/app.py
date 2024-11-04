@@ -31,12 +31,15 @@ index = Index()
 
 
 def get_user_id():
-    user_session = UserSession(session, 'default')
-    if 'eppn' in user_session.userinfo:
-        eppn = user_session.userinfo['eppn']
-        return eppn[0] if type(eppn) == list else eppn
+    if auth:
+        user_session = UserSession(session, 'default')
+        if 'eppn' in user_session.userinfo:
+            eppn = user_session.userinfo['eppn']
+            return eppn[0] if type(eppn) == list else eppn
 
-    return user_session.userinfo['sub']
+        return user_session.userinfo['sub']
+
+    return None
 
 
 def authenticated(func):

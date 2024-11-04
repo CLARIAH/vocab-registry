@@ -15,6 +15,7 @@ ns = {"cmd": "http://www.clarin.eu/cmd/"}
 ns_prefix = '{http://www.clarin.eu/cmd/}'
 voc_root = './cmd:Components/cmd:Vocabulary'
 
+xpath_identifier = "./cmd:identifier"
 xpath_code = "./cmd:code"
 xpath_count = "./cmd:count"
 xpath_name = "./cmd:name"
@@ -23,19 +24,22 @@ xpath_recipe = "./cmd:recipe"
 xpath_URI = "./cmd:URI"
 xpath_uri = "./cmd:uri"
 xpath_prefix = "./cmd:prefix"
+xpath_unesco = "./cmd:unesco"
+xpath_nwo = "./cmd:nwo"
+xpath_tag = "./cmd:tag"
 xpath_version_no = "./cmd:version"
 xpath_valid_from = "./cmd:validFrom"
+xpath_body = "./cmd:body"
+xpath_author = "./cmd:author"
+xpath_status = "./cmd:status"
+xpath_rating = "./cmd:rating"
+xpath_like = "./cmd:like"
+xpath_dislike = "./cmd:dislike"
 
-xpath_location_elem = "./cmd:Location"
-xpath_review_elem = "./cmd:body"
-xpath_review_author_elem = "./cmd:author"
-xpath_review_status_elem = "./cmd:status"
-xpath_rating_elem = "./cmd:rating"
-xpath_like_elem = "./cmd:like"
-xpath_dislike_elem = "./cmd:dislike"
-xpath_namespace_elem = "./cmd:Namespaces/cmd:Namespace"
-xpath_namespace_item_elem = "./cmd:NamespaceItems/cmd:NamespaceItem"
-xpath_summary_elem = "./cmd:Summary"
+xpath_location = "./cmd:Location"
+xpath_namespace = "./cmd:Namespace"
+xpath_summary = "./cmd:Summary"
+xpath_namespace_item = "./cmd:NamespaceItems/cmd:NamespaceItem"
 
 xpath_summary_ns = "./cmd:Summary/cmd:Namespace"
 xpath_summary_ns_uri = "./cmd:Summary/cmd:Namespace/cmd:URI"
@@ -49,15 +53,34 @@ xpath_summary_st_obj_classes = "./cmd:Summary/cmd:Statements/cmd:Objects/cmd:Cla
 xpath_summary_st_obj_literals = "./cmd:Summary/cmd:Statements/cmd:Objects/cmd:Literals"
 xpath_summary_st_obj_literals_lang = "./cmd:Summary/cmd:Statements/cmd:Objects/cmd:Literals/cmd:Languages/cmd:Language"
 
-xpath_vocab_type = f"{voc_root}/cmd:type"
 xpath_title = f"({voc_root}/cmd:title[@xml:lang='en'][normalize-space(.)!=''],base-uri(/cmd:CMD)[normalize-space(.)!=''])[1]"
-xpath_description = f"{voc_root}/cmd:Description/cmd:description"
-xpath_license = f"{voc_root}/cmd:License/cmd:url"
-xpath_publisher = f"{voc_root}/cmd:Assessement/cmd:Recommendation/cmd:Publisher"
-xpath_review = f"{voc_root}/cmd:Assessement/cmd:Review"
-xpath_location = f"{voc_root}/cmd:Location"
+xpath_description = f"{voc_root}/cmd:description[@xml:lang='en']"
+
+xpath_type_syntax = f"{voc_root}/cmd:Type/cmd:syntax"
+xpath_type_kos = f"{voc_root}/cmd:Type/cmd:kos"
+xpath_type_entity = f"{voc_root}/cmd:Type/cmd:entity"
+
+xpath_license_uri = f"{voc_root}/cmd:License/cmd:uri"
+xpath_license_label = f"{voc_root}/cmd:License/cmd:label"
+
+xpath_topic_domain = f"{voc_root}/cmd:Topic/cmd:Domain"
+xpath_topic_tag = f"{voc_root}/cmd:Topic/cmd:Tag"
+xpath_publisher = f"{voc_root}/cmd:Publisher"
+xpath_root_namespace = f"{voc_root}/cmd:Namespace"
+xpath_root_location = f"{voc_root}/cmd:Location"
+xpath_review = f"{voc_root}/cmd:Review"
 xpath_version = f"{voc_root}/cmd:Version"
-xpath_assessment = f"{voc_root}/cmd:Assessement"
+
+
+class Type(BaseModel):
+    syntax: str
+    kos: Optional[str] = None
+    entity: Optional[str] = None
+
+
+class License(BaseModel):
+    uri: str
+    label: str
 
 
 class Location(BaseModel):
@@ -66,14 +89,24 @@ class Location(BaseModel):
     recipe: Optional[str] = None
 
 
-class Usage(BaseModel):
-    count: int
-    outOf: int
+class Namespace(BaseModel):
+    uri: str
+    prefix: Optional[str] = None
 
 
-class Recommendation(BaseModel):
-    publisher: str
-    rating: Optional[str] = None
+class Domain(BaseModel):
+    unesco: Optional[str] = None
+    nwo: Optional[str] = None
+
+
+class Tag(BaseModel):
+    tag: str
+    uri: Optional[str] = None
+
+
+class Topic(BaseModel):
+    domain: Optional[Domain] = None
+    tags: List[Tag] = []
 
 
 class Review(BaseModel):
@@ -84,13 +117,14 @@ class Review(BaseModel):
     dislikes: int
 
 
-class Namespace(BaseModel):
+class Publisher(BaseModel):
+    identifier: str
+    name: str
     uri: str
-    prefix: Optional[str] = None
 
 
 class SummaryNamespaceStats(Namespace):
-    count: Optional[int] = None
+    count: Optional[int] = 0
 
 
 class SummaryNamespaceNameStats(SummaryNamespaceStats):
@@ -98,7 +132,7 @@ class SummaryNamespaceNameStats(SummaryNamespaceStats):
 
 
 class SummaryStats(BaseModel):
-    count: Optional[int] = None
+    count: Optional[int] = 0
     stats: List[SummaryNamespaceStats]
 
 
@@ -116,7 +150,6 @@ class SummaryObjectStats(SummaryStats):
 
 
 class Summary(BaseModel):
-    namespace: Optional[Namespace] = None
     stats: Optional[SummaryStats] = None
     subjects: Optional[SummaryStats] = None
     predicates: Optional[SummaryStats] = None
@@ -126,24 +159,23 @@ class Summary(BaseModel):
 class Version(BaseModel):
     version: str
     validFrom: Optional[str] = None
-    locations: List[Location]
+    locations: List[Location] = []
     summary: Optional[Summary] = None
 
 
 class Vocab(BaseModel):
     id: str
-    type: str
     title: str
     description: str
-    license: str
-    versioningPolicy: Optional[str] = None
-    sustainabilityPolicy: Optional[str] = None
     created: datetime
     modified: datetime
+    type: Type
+    license: License
     locations: List[Location]
+    namespace: Optional[Namespace] = None
+    topic: Optional[Topic] = None
     reviews: List[Review] = []
-    usage: Usage
-    recommendations: List[Recommendation]
+    publishers: List[Publisher] = []
     versions: List[Version]
 
 
@@ -193,6 +225,12 @@ def grab_value(path, root, func=None):
 
 
 def get_record(id: str) -> Vocab:
+    def create_tag_for(elem: Element) -> Tag:
+        return Tag(
+            tag=grab_value(xpath_tag, elem),
+            uri=grab_value(xpath_uri, elem),
+        )
+
     def create_summary_for(elem: Element) -> SummaryStats:
         return SummaryStats(
             count=grab_value(xpath_count, elem, int),
@@ -200,7 +238,7 @@ def get_record(id: str) -> Vocab:
                 uri=grab_value(xpath_URI, ns_elem),
                 prefix=grab_value(xpath_prefix, ns_elem),
                 count=grab_value(xpath_count, ns_elem, int),
-            ) for ns_elem in elementpath.select(elem, xpath_namespace_elem, ns)]
+            ) for ns_elem in elementpath.select(elem, xpath_namespace, ns)]
         )
 
     def create_list_for(elem: Element) -> List[SummaryNamespaceNameStats]:
@@ -209,7 +247,7 @@ def get_record(id: str) -> Vocab:
             prefix=grab_value(xpath_prefix, list_item_elem),
             name=grab_value(xpath_name, list_item_elem),
             count=grab_value(xpath_count, list_item_elem, int),
-        ) for list_item_elem in elementpath.select(elem, xpath_namespace_item_elem, ns)]
+        ) for list_item_elem in elementpath.select(elem, xpath_namespace_item, ns)]
 
     def create_location_for(elem: Element) -> Location:
         return Location(
@@ -218,24 +256,25 @@ def get_record(id: str) -> Vocab:
             recipe=grab_value(xpath_recipe, elem),
         )
 
+    def create_publisher_for(elem: Element) -> Publisher:
+        return Publisher(
+            identifier=grab_value(xpath_identifier, elem),
+            name=grab_value(xpath_name, elem),
+            uri=grab_value(xpath_uri, elem),
+        )
+
     def create_review_for(id: int, elem: Element) -> Review:
         return Review(
             id=id,
-            review=grab_value(xpath_review_elem, elem),
-            rating=grab_value(xpath_rating_elem, elem),
-            likes=len(elementpath.select(elem, xpath_like_elem, ns)),
-            dislikes=len(elementpath.select(elem, xpath_dislike_elem, ns))
+            review=grab_value(xpath_body, elem),
+            rating=grab_value(xpath_rating, elem),
+            likes=len(elementpath.select(elem, xpath_like, ns)),
+            dislikes=len(elementpath.select(elem, xpath_dislike, ns))
         )
 
     def create_version(elem: Element) -> Version:
-        summary_namespace = Namespace(
-            uri=grab_value(xpath_summary_ns_uri, elem),
-            prefix=grab_value(xpath_summary_ns_prefix, elem)
-        ) if grab_first(xpath_summary_ns, elem) is not None else None
-
         summary = Summary(
-            namespace=summary_namespace,
-            stats=create_summary_for(grab_first(xpath_summary_elem, elem)),
+            stats=create_summary_for(grab_first(xpath_summary, elem)),
             subjects=create_summary_for(grab_first(xpath_summary_st_subj, elem)),
             predicates=create_summary_for(grab_first(xpath_summary_st_pred, elem)),
             objects=SummaryObjectStats(
@@ -253,14 +292,13 @@ def get_record(id: str) -> Vocab:
                     },
                 ),
             )
-        ) if grab_first(xpath_summary_st, elem) is not None else (
-            Summary(namespace=summary_namespace)) if summary_namespace is not None else None
+        ) if grab_first(xpath_summary_st, elem) is not None else None
 
         return Version(
             version=grab_value(xpath_version_no, elem),
             validFrom=grab_value(xpath_valid_from, elem),
             locations=[create_location_for(loc_elem)
-                       for loc_elem in elementpath.select(elem, xpath_location_elem, ns)],
+                       for loc_elem in elementpath.select(elem, xpath_location, ns)],
             summary=summary
         )
 
@@ -269,22 +307,39 @@ def get_record(id: str) -> Vocab:
 
     return Vocab(
         id=id,
-        type=grab_value(xpath_vocab_type, root),
         title=grab_value(xpath_title, root),
         description=grab_value(xpath_description, root),
-        license=grab_value(xpath_license, root) or 'http://rightsstatements.org/vocab/UND/1.0/',
-        versioningPolicy=None,
-        sustainabilityPolicy=None,
         created=datetime.fromtimestamp(os.path.getctime(file), UTC).isoformat(),
         modified=datetime.fromtimestamp(os.path.getmtime(file), UTC).isoformat(),
+        type=Type(
+            syntax=grab_value(xpath_type_syntax, root),
+            kos=grab_value(xpath_type_kos, root),
+            entity=grab_value(xpath_type_entity, root)
+        ),
+        license=License(
+            uri=grab_value(xpath_license_uri, root) or 'http://rightsstatements.org/vocab/UND/1.0/',
+            label=grab_value(xpath_license_label, root) or 'Unknown'
+        ),
+        namespace=Namespace(
+            uri=grab_value(xpath_uri, elementpath.select(root, xpath_root_namespace, ns)[0]),
+            prefix=grab_value(xpath_prefix, elementpath.select(root, xpath_root_namespace, ns)[0])
+        ) if elementpath.select(root, xpath_root_namespace, ns) else None,
+        topic=Topic(
+            domain=Domain(
+                unesco=grab_value(xpath_unesco, elementpath.select(root, xpath_topic_domain, ns)),
+                nwo=grab_value(xpath_nwo, elementpath.select(root, xpath_topic_domain, ns))
+            ) if elementpath.select(root, xpath_topic_domain, ns) else None,
+            tags=[create_tag_for(elem)
+                  for elem in elementpath.select(root, xpath_topic_tag, ns)]
+        ) if elementpath.select(root, xpath_topic_domain, ns)
+             or elementpath.select(root, xpath_topic_tag, ns) else None,
         locations=[create_location_for(elem)
-                   for elem in elementpath.select(root, xpath_location, ns)],
-        reviews=[create_review_for(i+1, elem)
+                   for elem in elementpath.select(root, xpath_root_location, ns)],
+        reviews=[create_review_for(i + 1, elem)
                  for i, elem in enumerate(elementpath.select(root, xpath_review, ns))
-                 if grab_value(xpath_review_status_elem, elem) == 'published'],
-        usage=Usage(count=0, outOf=0),
-        recommendations=[Recommendation(publisher=grab_value(xpath_name, elem), rating=None)
-                         for elem in elementpath.select(root, xpath_publisher, ns)],
+                 if grab_value(xpath_status, elem) == 'published'],
+        publishers=[create_publisher_for(elem)
+                    for elem in elementpath.select(root, xpath_publisher, ns)],
         versions=sorted([create_version(elem) for elem in elementpath.select(root, xpath_version, ns)],
                         key=lambda x: (x.validFrom is not None, x.version), reverse=True)
     )
@@ -296,17 +351,17 @@ def get_reviews_user_interaction(id: str, user: str) -> ReviewsUserInteraction:
 
     authored = [i + 1
                 for i, elem in enumerate(elementpath.select(root, xpath_review, ns))
-                if user == grab_value(xpath_review_author_elem, elem)]
+                if user == grab_value(xpath_author, elem)]
 
     likes = [i + 1
              for i, elem in enumerate(elementpath.select(root, xpath_review, ns))
              if user in [unicodedata.normalize("NFKC", like_elem.text)
-                         for like_elem in elementpath.select(elem, xpath_like_elem, ns)]]
+                         for like_elem in elementpath.select(elem, xpath_like, ns)]]
 
     dislikes = [i + 1
                 for i, elem in enumerate(elementpath.select(root, xpath_review, ns))
                 if user in [unicodedata.normalize("NFKC", dislike_elem.text)
-                            for dislike_elem in elementpath.select(elem, xpath_dislike_elem, ns)]]
+                            for dislike_elem in elementpath.select(elem, xpath_dislike, ns)]]
 
     return ReviewsUserInteraction(authored=authored, likes=likes, dislikes=dislikes)
 
@@ -319,8 +374,7 @@ def add_review_to_cmdi(id: str, author: str, body: str, rating: int):
     file = get_file_for_id(id)
     root = read_root(file)
 
-    assessment_elem = grab_first(xpath_assessment, root)
-    review_elem = etree.SubElement(assessment_elem, f"{ns_prefix}Review", nsmap=ns)
+    review_elem = etree.SubElement(root, f"{ns_prefix}Review", nsmap=ns)
 
     status_elem = etree.SubElement(review_elem, f"{ns_prefix}status", nsmap=ns)
     status_elem.text = 'new'
@@ -351,13 +405,13 @@ def persist_review_like_to_cmdi(id: str, review_no: int, user: str, is_like: boo
             should_add_like = is_like
             should_add_dislike = not is_like
 
-            for like_elem in elementpath.select(elem, xpath_like_elem, ns):
+            for like_elem in elementpath.select(elem, xpath_like, ns):
                 if unicodedata.normalize("NFKC", like_elem.text) == user:
                     elem.remove(like_elem)
                     if is_like:
                         should_add_like = False
 
-            for dislike_elem in elementpath.select(elem, xpath_dislike_elem, ns):
+            for dislike_elem in elementpath.select(elem, xpath_dislike, ns):
                 if unicodedata.normalize("NFKC", dislike_elem.text) == user:
                     elem.remove(dislike_elem)
                     if not is_like:

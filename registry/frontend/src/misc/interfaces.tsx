@@ -1,22 +1,28 @@
 export interface Vocab {
     id: string;
-    type: string;
     title: string;
-    description: string | null;
-    license: string;
-    versioningPolicy: string | null;
-    sustainabilityPolicy: string | null;
+    description: string;
     created: string;
     modified: string;
+    type: Type;
+    license: License;
     locations: VocabLocation[];
-    user: string;
+    namespace: Namespace | null;
+    topic: Topic | null;
     reviews: Review[];
-    usages: {
-        count: number;
-        outOf: number;
-    };
-    recommendations: VocabRecommendation[];
+    publishers: Publisher[];
     versions: VocabVersion[];
+}
+
+export interface Type {
+    syntax: string;
+    kos: string | null;
+    entity: string | null;
+}
+
+export interface License {
+    uri: string;
+    label: string;
 }
 
 export interface Review {
@@ -33,6 +39,32 @@ export interface VocabLocation {
     recipe: 'sparql' | 'skosmos' | 'doc' | 'rdf' | 'cache' | null;
 }
 
+export interface Namespace {
+    uri: string;
+    prefix: string;
+}
+
+export interface Topic {
+    domain: Domain | null;
+    tags: Tag[];
+}
+
+export interface Domain {
+    unesco: string | null;
+    nwo: string | null;
+}
+
+export interface Tag {
+    tag: string;
+    uri: string | null;
+}
+
+export interface Publisher {
+    identifier: string;
+    name: string;
+    uri: string;
+}
+
 export interface VocabVersion {
     version: string;
     validFrom: string | null;
@@ -40,16 +72,7 @@ export interface VocabVersion {
     summary: VocabSummary | null;
 }
 
-export interface VocabRecommendation {
-    publisher: string;
-    rating: string | null;
-}
-
 export interface VocabSummary {
-    namespace: {
-        uri: string;
-        prefix: string;
-    },
     stats: VocabSummaryCounts;
     subjects: VocabSummaryCounts;
     predicates: VocabSummaryCounts & VocabSummaryList;
