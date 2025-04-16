@@ -79,7 +79,7 @@ class Index:
             "query": query,
             "size": length,
             "from": start,
-            "_source": ["id", "title", "description", "type"],
+            "_source": ["id", "title", "description", "syntax"],
             "sort": [
                 {"title.keyword": {"order": "asc"}}
             ]

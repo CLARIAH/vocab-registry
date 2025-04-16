@@ -116,5 +116,5 @@ export interface VocabIndex {
     id: string;
     title: string;
     description: string;
-    type: string;
+    syntax: string;
 }

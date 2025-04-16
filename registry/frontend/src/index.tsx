@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {createBrowserRouter, RouteObject, RouterProvider} from 'react-router-dom';
+import {createBrowserRouter, Outlet, RouteObject, RouterProvider, ScrollRestoration} from 'react-router-dom';
 import {
     App,
     PageHeader,
@@ -32,13 +32,16 @@ const pageHeader = <PageHeader
 
 const routeObject: RouteObject = {
     path: '/',
-    element: <App header={pageHeader}/>,
+    element: <App header={pageHeader}>
+        <ScrollRestoration/>
+        <Outlet/>
+    </App>,
     children: [{
         index: true,
         loader: async ({request}) => searchLoader(new URL(request.url).searchParams),
         element: <Search title={title} pageLength={10} withPaging={true}
                          hasIndexPage={false} showSearchHeader={false} updateDocumentTitle={false}
-                         searchParams={SearchParams.PARAMS} FacetsComponent={Facets} ResultItemComponent={ListItem}/>
+                         searchParams={SearchParams.PARAMS} facetsElement={<Facets/>} ResultItemComponent={ListItem}/>
     }, {
         path: ':id/:tab?',
         loader: async ({params}) => detailLoader(params.id as string),

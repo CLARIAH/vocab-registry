@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import LocationIconBar from './LocationIconBar';
 import LocationInteract from './LocationInteract';
 import useLocationFocus from '../hooks/useLocationFocus';
-import {Publisher, Vocab, VocabVersion} from '../misc/interfaces';
+import {Vocab, VocabVersion} from '../misc/interfaces';
 
 export default function Description({data, version}: { data: Vocab, version?: VocabVersion }) {
     const [locationFocus, onLocationClick] = useLocationFocus();
@@ -16,9 +16,9 @@ export default function Description({data, version}: { data: Vocab, version?: Vo
                 <LocationIconBar locations={locations} onLocationClick={onLocationClick} inline={false}/>
             </div>}
 
-            {data.description && <ReactMarkdown className="detailLine extraBottomMargin">
-                {data.description}
-            </ReactMarkdown>}
+            {data.description && <div className="detailLine extraBottomMargin">
+                <ReactMarkdown>{data.description}</ReactMarkdown>
+            </div>}
 
             <div className="detailTable">
                 <DetailRow label="Type" values={data.type.syntax}/>

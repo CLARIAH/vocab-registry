@@ -13,10 +13,10 @@ python = "^3.12"
 Flask = "^3.0.3"
 Flask-Cors = "^4.0.1"
 Flask-pyoidc = "^3.14.3"
-pydantic = "^2.8.2"
-elasticsearch = "^8.15.0"
-lxml = "^5.3.0"
-elementpath = "^4.4.0"
+pydantic = "^2.10.6"
+elasticsearch = "^8.17.1"
+lxml = "^5.3.1"
+elementpath = "^4.7.0"
 
 [tool.poetry.group.prod]
 optional = true

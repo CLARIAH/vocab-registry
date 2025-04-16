@@ -13,7 +13,7 @@ export default function ListItem({item}: { item: VocabIndex }) {
         <div className="hcResultListDetail">
             <div className="justify">
                 <h2><Link to={item.id}>{item.title}</Link></h2>
-                <span className="pill">{item.type}</span>
+                <span className="pill">{item.syntax}</span>
             </div>
 
             <div className="detailLine">
