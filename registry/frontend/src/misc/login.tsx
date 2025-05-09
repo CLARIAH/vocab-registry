@@ -1,4 +1,3 @@
-import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 
 export const getLoginUrl = () => `/login?redirect-uri=${window.location.protocol + '//' + window.location.host + window.location.pathname}`;

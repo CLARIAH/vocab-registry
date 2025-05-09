@@ -1,12 +1,12 @@
 import dayjs from 'dayjs';
-import React, {ReactElement} from 'react';
+import {ReactElement} from 'react';
 import ReactMarkdown from 'react-markdown';
 import LocationIconBar from './LocationIconBar';
 import LocationInteract from './LocationInteract';
 import useLocationFocus from '../hooks/useLocationFocus';
-import {Vocab, VocabVersion} from '../misc/interfaces';
+import {Vocab, Version} from '../misc/interfaces';
 
-export default function Description({data, version}: { data: Vocab, version?: VocabVersion }) {
+export default function Description({data, version}: { data: Vocab, version?: Version }) {
     const [locationFocus, onLocationClick] = useLocationFocus();
     const locations = data.locations.concat(...(version?.locations || []));
 
@@ -22,13 +22,13 @@ export default function Description({data, version}: { data: Vocab, version?: Vo
 
             <div className="detailTable">
                 <DetailRow label="Type" values={data.type.syntax}/>
-                <DetailRow label="Created" values={dayjs(data.created).format('MMM D, YYYY HH:mm')}/>
-                <DetailRow label="Modified" values={dayjs(data.modified).format('MMM D, YYYY HH:mm')}/>
-                <DetailRow label="License" values={<a href={data.license.uri}>{data.license.label}</a>}/>
-                {data.publishers &&
-                    <DetailRow label="Publisher" values={data.publishers.map(publisher =>
-                        <a key={publisher.uri} href={publisher.uri} target="_blank">
-                            {publisher.name}
+                <DetailRow label="Date issued" values={dayjs(data.date_issued).format('MMM D, YYYY HH:mm')}/>
+                <DetailRow label="License" values={data.licenses.map(license =>
+                    license.uri ? <a href={license.uri}>{license.label}</a> : <>license.label</>)}/>
+                {data.registries &&
+                    <DetailRow label="Registry" values={data.registries.map(registry =>
+                        <a key={registry.url} href={registry.landing_page || registry.url} target="_blank">
+                            {registry.title}
                         </a>
                     )}/>}
             </div>

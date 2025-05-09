@@ -1,8 +1,7 @@
-import React from 'react';
 import Yasgui from '../misc/Yasgui';
-import {VocabLocation} from '../misc/interfaces';
+import {Location} from '../misc/interfaces';
 
-export default function LocationInteract({location}: { location: VocabLocation | null }) {
+export default function LocationInteract({location}: { location: Location | null }) {
     return (
         <div className={`vocabVersionBody ${location ? 'open' : ''}`}>
             {location && location.recipe === 'sparql' && <VersionYasgui endpoint={location.location}/>}

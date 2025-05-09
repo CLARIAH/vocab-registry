@@ -1,17 +1,36 @@
 export interface Vocab {
-    id: string;
+    identifier: string;
     title: string;
-    description: string;
-    created: string;
-    modified: string;
-    type: Type;
-    license: License;
-    locations: VocabLocation[];
     namespace: Namespace | null;
+    creators: Authority[];
+    maintainers: Authority[];
+    contributors: Authority[];
+    description: string;
+    date_issued: string;
+    languages: string[];
     topic: Topic | null;
+    keywords: Authority[];
+    type: Type;
+    licenses: Authority[];
+    registries: Registry[];
+    locations: Location[];
+    versions: Version[];
     reviews: Review[];
-    publishers: Publisher[];
-    versions: VocabVersion[];
+}
+
+export interface Namespace {
+    uri: string;
+    prefix: string;
+}
+
+export interface Authority {
+    uri: string | null;
+    label: string;
+}
+
+export interface Topic {
+    unesco: string | null;
+    nwo: string | null;
 }
 
 export interface Type {
@@ -20,55 +39,22 @@ export interface Type {
     entity: string | null;
 }
 
-export interface License {
-    uri: string;
-    label: string;
+export interface Registry {
+    title: string;
+    url: string;
+    landing_page: string | null;
 }
 
-export interface Review {
-    id: number;
-    review: string;
-    rating: number;
-    likes: number;
-    dislikes: number;
-}
-
-export interface VocabLocation {
+export interface Location {
     location: string;
     type: 'homepage' | 'endpoint';
     recipe: 'sparql' | 'skosmos' | 'doc' | 'rdf' | 'cache' | null;
 }
 
-export interface Namespace {
-    uri: string;
-    prefix: string;
-}
-
-export interface Topic {
-    domain: Domain | null;
-    tags: Tag[];
-}
-
-export interface Domain {
-    unesco: string | null;
-    nwo: string | null;
-}
-
-export interface Tag {
-    tag: string;
-    uri: string | null;
-}
-
-export interface Publisher {
-    identifier: string;
-    name: string;
-    uri: string;
-}
-
-export interface VocabVersion {
+export interface Version {
     version: string;
     validFrom: string | null;
-    locations: VocabLocation[];
+    locations: Location[];
     summary: VocabSummary | null;
 }
 
@@ -110,6 +96,15 @@ export interface VocabSummaryListItem {
 export interface VocabObjectSummary {
     classes: VocabSummaryCounts | null;
     literals: VocabSummaryCounts | null;
+}
+
+export interface Review {
+    id: number;
+    published: string;
+    body: string;
+    rating: number;
+    likes: number;
+    dislikes: number;
 }
 
 export interface VocabIndex {

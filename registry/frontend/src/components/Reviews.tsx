@@ -22,7 +22,7 @@ export default function Reviews({data}: { data: Vocab }) {
     useEffect(() => {
         if (authEnabled) {
             const fetchReviewsUserInteraction = async () => {
-                const response = await fetch(`/reviews_user_interaction/${data.id}`);
+                const response = await fetch(`/reviews_user_interaction/${data.identifier}`);
                 if (response.ok) {
                     const rsp = await response.json();
                     setReviewsUserInteraction(rsp);
@@ -36,7 +36,7 @@ export default function Reviews({data}: { data: Vocab }) {
     return (
         <div>
             <div className="reviewButtons">
-                <ReportAbuse id={data.id} userInfo={userInfo}/>
+                <ReportAbuse id={data.identifier} userInfo={userInfo}/>
                 <AddReview data={data} authEnabled={authEnabled} userInfo={userInfo}/>
             </div>
 
@@ -69,7 +69,7 @@ function Review({data, review, authenticated, authored, liked, disliked}: {
     async function onLike(isLike: boolean) {
         setHasToggled(isLike);
 
-        await fetch(`/${isLike ? 'like' : 'dislike'}/${data.id}/${review.id}`, {
+        await fetch(`/${isLike ? 'like' : 'dislike'}/${data.identifier}/${review.id}`, {
             method: 'POST'
         });
 
@@ -91,7 +91,7 @@ function Review({data, review, authenticated, authored, liked, disliked}: {
                               onLike={() => onLike(true)} onDislike={() => onLike(false)}/>
             </div>
 
-            <p>{review.review}</p>
+            <p>{review.body}</p>
         </div>
     );
 }

@@ -1,4 +1,3 @@
-import React from 'react';
 import {FreeTextFacet, ListFacet} from '@knaw-huc/browser-base-react';
 
 export default function Facets() {

@@ -1,15 +1,15 @@
 import {MouseEvent, useState} from 'react';
-import {VocabLocation} from '../misc/interfaces';
+import {Location} from '../misc/interfaces';
 
 type LocationFocusHook = [
-    VocabLocation | null,
-    (loc: VocabLocation, e: MouseEvent<HTMLAnchorElement>) => void
+    Location | null,
+    (loc: Location, e: MouseEvent<HTMLAnchorElement>) => void
 ];
 
 export default function useLocationFocus(): LocationFocusHook {
-    const [locationFocus, setLocationFocus] = useState<VocabLocation | null>(null);
+    const [locationFocus, setLocationFocus] = useState<Location | null>(null);
 
-    const onLocationClick = (loc: VocabLocation, e: MouseEvent<HTMLAnchorElement>) => {
+    const onLocationClick = (loc: Location, e: MouseEvent<HTMLAnchorElement>) => {
         if (locationFocus && locationFocus.type === loc.type &&
             locationFocus.recipe === loc.recipe && locationFocus.location === loc.location) {
             setLocationFocus(null);

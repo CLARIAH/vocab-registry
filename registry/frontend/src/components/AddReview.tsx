@@ -51,7 +51,7 @@ function AddReviewModalContent({vocab}: { vocab: Vocab }) {
         formData.append('rating', data.rating.toString());
         formData.append('body', data.body);
 
-        return fetch(`/review/${vocab.id}`, {
+        return fetch(`/review/${vocab.identifier}`, {
             method: 'POST',
             body: formData,
         });

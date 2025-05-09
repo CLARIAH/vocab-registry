@@ -1,6 +1,6 @@
-import {VocabSummary, VocabSummaryListItem, VocabVersion} from '../misc/interfaces';
+import {VocabSummary, VocabSummaryListItem, Version} from '../misc/interfaces';
 
-export default function Summary({version}: { version?: VocabVersion }) {
+export default function Summary({version}: { version?: Version }) {
     if (!version || !version.summary)
         return <div>No summarized data available for this version!</div>;
 

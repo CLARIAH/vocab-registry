@@ -1,5 +1,5 @@
-import React, {useMemo, useState} from 'react';
 import {Link} from 'react-router-dom';
+import {useMemo, useState} from 'react';
 import {VocabIndex} from '../misc/interfaces';
 import {parseTextFromMarkDown} from '../misc/markdown';
 
