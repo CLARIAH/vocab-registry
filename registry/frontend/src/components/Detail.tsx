@@ -47,15 +47,15 @@ export default function Detail({data}: { data: Vocab }) {
                         </a>
 
                         <div className="hcToggle">
-                            <Link to={`/${id}/description`}
+                            <Link to={`/vocab/${id}/description`}
                                   className={`hcButton ${viewOpened === ViewOpened.DESCRIPTION ? 'tabActive' : ''}`}>
                                 Description
                             </Link>
-                            <Link to={`/${id}/summary`}
+                            <Link to={`/vocab/${id}/summary`}
                                   className={`hcButton ${viewOpened === ViewOpened.SUMMARY ? 'tabActive' : ''}`}>
                                 Summary
                             </Link>
-                            <Link to={`/${id}/reviews`}
+                            <Link to={`/vocab/${id}/reviews`}
                                   className={`hcButton ${viewOpened === ViewOpened.REVIEWS ? 'tabActive' : ''}`}>
                                 Reviews
                             </Link>

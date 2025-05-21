@@ -14,7 +14,7 @@ interface NewVocabInputs {
 
 export default function RegisterNewVocab() {
     return (
-        <Modal triggerElement={<button className="hcButton">Register new vocabulary</button>}>
+        <Modal triggerElement={<button className="hcButton registerNew">Register new vocabulary</button>}>
             <RegisterNewVocabModalContent/>
         </Modal>
     );
@@ -37,7 +37,7 @@ function RegisterNewVocabModalContent() {
         formData.append('homepage', data.homepage);
         formData.append('description', data.description);
 
-        return fetch('/vocab/new', {
+        return fetch('/vocabulary/new', {
             method: 'POST',
             body: formData,
         });

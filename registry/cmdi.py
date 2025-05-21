@@ -386,10 +386,6 @@ def get_reviews_user_interaction(id: str, user: str) -> ReviewsUserInteraction:
     return ReviewsUserInteraction(authored=authored, likes=likes, dislikes=dislikes)
 
 
-def create_basic_cmdi(title: str, homepage: str, description: str):
-    return True
-
-
 def add_review_to_cmdi(id: str, author: str, body: str, rating: int):
     file = get_file_for_id(id)
     root = read_root(file)

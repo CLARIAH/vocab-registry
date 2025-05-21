@@ -5,9 +5,10 @@ from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMet
 from flask_pyoidc.user_session import UserSession
 from werkzeug.http import parse_date
 from functools import wraps
+
 from registry.elastic_index import Index
-from registry.cmdi import get_record, create_basic_cmdi, add_review_to_cmdi, \
-    persist_review_like_to_cmdi, get_reviews_user_interaction
+from registry.mail import send_new_vocab_email, send_report_abuse_email
+from registry.cmdi import get_record, add_review_to_cmdi, persist_review_like_to_cmdi, get_reviews_user_interaction
 from registry.config import secret_key, oidc_server, oidc_client_id, oidc_client_secret, oidc_redirect_uri
 
 app = Flask(__name__, static_folder='frontend/dist', static_url_path='')
@@ -56,10 +57,11 @@ def authenticated(func):
 
 
 @app.route('/', defaults={'path': ''})
-@app.route('/<path>')
-@app.route('/<path>/description')
-@app.route('/<path>/summary')
-@app.route('/<path>/reviews')
+@app.route('/vocab/<path>')
+@app.route('/vocab/<path>/description')
+@app.route('/vocab/<path>/summary')
+@app.route('/vocab/<path>/reviews')
+@app.route('/new')
 def catch_all(path):
     return app.send_static_file("index.html")
 
@@ -93,17 +95,17 @@ def browse():
     return jsonify(ret_struc)
 
 
-@app.get('/vocab/<id>')
+@app.get('/vocabulary/<id>')
 def get_vocab(id):
     return jsonify(get_record(id).model_dump())
 
 
-@app.post('/vocab/new')
+@app.post('/vocabulary/new')
 @authenticated
 def post_vocab():
     if 'title' in request.values and 'homepage' in request.values and 'description' in request.values:
-        if create_basic_cmdi(request.values['title'], request.values['homepage'], request.values['description']):
-            # TODO: send email
+        user_id = get_user_id()
+        if send_new_vocab_email(user_id, request.values['title'], request.values['homepage'], request.values['description']):
             return jsonify(success=True), 201
 
     return jsonify(success=False), 400
@@ -130,8 +132,8 @@ def reviews_user_interaction(id):
 @app.post('/review/<id>/report')
 def report_abuse(id):
     if 'name' in request.values and 'email' in request.values and 'description' in request.values:
-        # TODO: send email
-        return jsonify(success=True), 200
+        if send_report_abuse_email(id, request.values['name'], request.values['email'], request.values['description']):
+            return jsonify(success=True), 200
 
     return jsonify(success=False), 400
 

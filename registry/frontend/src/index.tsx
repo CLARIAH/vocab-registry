@@ -20,15 +20,18 @@ import RegisterNewVocab from './components/RegisterNewVocab.js';
 import logo from './assets/logo.svg';
 import './index.css';
 
-const title = 'CLARIAH+ FAIR Vocabulary Registry';
-const shortTitle = 'FAIR Vocabulary Registry';
+const title = 'SSH FAIR Vocabulary Registry';
 const searchLoader = createSearchLoader(searchUtils.getSearchObjectFromParams, '/browse', 10);
-const detailLoader = createDetailLoader(id => `/vocab/${id}`);
+const detailLoader = createDetailLoader(id => `/vocabulary/${id}`);
 
-const pageHeader = <PageHeader
-    title={shortTitle}
-    logo={<img src={logo} className="logo" alt="Clariah"/>}
-    items={<RegisterNewVocab/>}/>;
+const pageHeader = <PageHeader title={title} items={<nav>
+    <a href="/about">About</a>
+    <a href="/guidelines">Guidelines</a>
+    <a href="/faq">FAQ</a>
+    <a href="/howtos">HowTos</a>
+    <a href="/release-notes">Release notes</a>
+    <a href="/publications">Publications</a>
+</nav>}/>;
 
 const routeObject: RouteObject = {
     path: '/',
@@ -41,9 +44,10 @@ const routeObject: RouteObject = {
         loader: async ({request}) => searchLoader(new URL(request.url).searchParams),
         element: <Search title={title} pageLength={10} withPaging={true}
                          hasIndexPage={false} showSearchHeader={false} updateDocumentTitle={false}
-                         searchParams={SearchParams.PARAMS} facetsElement={<Facets/>} ResultItemComponent={ListItem}/>
+                         searchParams={SearchParams.PARAMS} ResultItemComponent={ListItem}
+                         facetsElement={<Facets/>} headersElement={<RegisterNewVocab/>}/>
     }, {
-        path: ':id/:tab?',
+        path: 'vocab/:id/:tab?',
         loader: async ({params}) => detailLoader(params.id as string),
         element: <BrowserDetail title={title} updateDocumentTitle={false} DetailComponent={Detail}/>
     }]
