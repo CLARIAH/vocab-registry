@@ -26,7 +26,7 @@ export default function Description({data, version}: { data: Vocab, version?: Ve
                     <DetailRow label="Type" values={[data.type.syntax, data.type.entity, data.type.kos].filter(type => type !== null)}/>
                     {data.topic && <DetailRow label="Topics" values={[data.topic.nwo, data.topic.unesco].filter(type => type !== null)}/>}
                     <DetailRow label="Date issued" values={dayjs(data.date_issued).format('MMM D, YYYY HH:mm')}/>
-                    <DetailRow label="Languages" values={data.languages}/>
+                    {data.languages.length > 0 && <DetailRow label="Languages" values={data.languages}/>}
                     <DetailRow label="License" values={data.licenses.map((license, idx) =>
                         <MaybeHref key={idx} href={license.uri} label={license.label}/>)}/>
                     {data.registries &&
@@ -38,13 +38,13 @@ export default function Description({data, version}: { data: Vocab, version?: Ve
                 </div>
 
                 <div className="detailTable">
-                    {data.creators &&
+                    {data.creators.length > 0 &&
                         <DetailRow label="Creators" values={data.creators.map((creator, idx) =>
                             <MaybeHref key={idx} href={creator.uri} label={creator.label}/>)}/>}
-                    {data.maintainers &&
+                    {data.maintainers.length > 0 &&
                         <DetailRow label="Maintainers" values={data.maintainers.map((maintainer, idx) =>
                             <MaybeHref key={idx} href={maintainer.uri} label={maintainer.label}/>)}/>}
-                    {data.contributors &&
+                    {data.contributors.length > 0 &&
                         <DetailRow label="Contributors" values={data.contributors.map((contributor, idx) =>
                             <MaybeHref key={idx} href={contributor.uri} label={contributor.label}/>)}/>}
                 </div>
