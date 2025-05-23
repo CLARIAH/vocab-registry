@@ -118,7 +118,7 @@ table.vocabSummary .footer-unique {
 
 .iconBar {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-evenly;
     align-items: center;
     font-size: 0.9em;
     font-weight: 700;
@@ -129,13 +129,8 @@ table.vocabSummary .footer-unique {
 }
 
 .icon {
-    flex-grow: 1;
     text-align: center;
     padding: 0 1em;
-}
-
-.icon:not(:last-child) {
-    border-right: 1px solid #aaa;
 }
 
 .icon a {
@@ -180,6 +175,12 @@ a.hcButton {
     word-break: break-word;
 }
 
+.detailTables {
+    display: flex;
+    align-items: start;
+    gap: 40px;
+}
+
 .detailTable {
     display: table;
 }
@@ -199,9 +200,9 @@ a.hcButton {
 }
 
 .labelCell {
-    width: 180px;
     border-right: 1px solid #aaa;
     font-weight: bold;
+    padding-right: 20px;
 }
 
 .cell {

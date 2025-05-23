@@ -6,7 +6,7 @@ export default defineConfig({
     server: {
         proxy: {
             '/browse': 'http://127.0.0.1:5000',
-            '/vocab': 'http://127.0.0.1:5000',
+            '/vocabulary': 'http://127.0.0.1:5000',
             '/facet': 'http://127.0.0.1:5000',
             '/user-info': 'http://127.0.0.1:5000',
             '/login': 'http://127.0.0.1:5000',

@@ -8,8 +8,15 @@ export default function Modal({triggerElement, children, onClose}: {
     children: ReactElement,
     onClose?: () => void
 }) {
+    function handleOpenChange(open: boolean) {
+        if (!open) {
+            document.body.style.overflow = '';
+            onClose?.();
+        }
+    }
+
     return (
-        <Dialog.Root onOpenChange={open => !open && onClose && onClose()}>
+        <Dialog.Root onOpenChange={handleOpenChange}>
             <Dialog.Trigger asChild>
                 {triggerElement}
             </Dialog.Trigger>

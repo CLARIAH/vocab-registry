@@ -13,29 +13,50 @@ export default function Description({data, version}: { data: Vocab, version?: Ve
     return (
         <div>
             {locations.length > 0 && <div className="extraBottomMargin">
-                <LocationIconBar locations={locations} onLocationClick={onLocationClick} inline={false}/>
+                <LocationIconBar locations={locations} onLocationClick={onLocationClick}/>
             </div>}
 
             {data.description && <div className="detailLine extraBottomMargin">
                 <ReactMarkdown>{data.description}</ReactMarkdown>
             </div>}
 
-            <div className="detailTable">
-                <DetailRow label="Type" values={data.type.syntax}/>
-                <DetailRow label="Date issued" values={dayjs(data.date_issued).format('MMM D, YYYY HH:mm')}/>
-                <DetailRow label="License" values={data.licenses.map(license =>
-                    license.uri ? <a href={license.uri}>{license.label}</a> : <>license.label</>)}/>
-                {data.registries &&
-                    <DetailRow label="Registry" values={data.registries.map(registry =>
-                        <a key={registry.url} href={registry.landing_page || registry.url} target="_blank">
-                            {registry.title}
-                        </a>
-                    )}/>}
+            <div className="detailTables">
+                <div className="detailTable">
+                    {data.namespace && <DetailRow label="Namespace" values={<>{data.namespace.uri} <span className="pill">{data.namespace.prefix}</span></>}/>}
+                    <DetailRow label="Type" values={[data.type.syntax, data.type.entity, data.type.kos].filter(type => type !== null)}/>
+                    {data.topic && <DetailRow label="Topics" values={[data.topic.nwo, data.topic.unesco].filter(type => type !== null)}/>}
+                    <DetailRow label="Date issued" values={dayjs(data.date_issued).format('MMM D, YYYY HH:mm')}/>
+                    <DetailRow label="Languages" values={data.languages}/>
+                    <DetailRow label="License" values={data.licenses.map((license, idx) =>
+                        <MaybeHref key={idx} href={license.uri} label={license.label}/>)}/>
+                    {data.registries &&
+                        <DetailRow label="Registries" values={data.registries.map(registry =>
+                            <a key={registry.url} href={registry.landing_page || registry.url} target="_blank">
+                                {registry.title}
+                            </a>
+                        )}/>}
+                </div>
+
+                <div className="detailTable">
+                    {data.creators &&
+                        <DetailRow label="Creators" values={data.creators.map((creator, idx) =>
+                            <MaybeHref key={idx} href={creator.uri} label={creator.label}/>)}/>}
+                    {data.maintainers &&
+                        <DetailRow label="Maintainers" values={data.maintainers.map((maintainer, idx) =>
+                            <MaybeHref key={idx} href={maintainer.uri} label={maintainer.label}/>)}/>}
+                    {data.contributors &&
+                        <DetailRow label="Contributors" values={data.contributors.map((contributor, idx) =>
+                            <MaybeHref key={idx} href={contributor.uri} label={contributor.label}/>)}/>}
+                </div>
             </div>
 
             <LocationInteract location={locationFocus}/>
         </div>
     );
+}
+
+function MaybeHref({href, label}: { href?: string | null, label: string }) {
+    return href ? <a href={href} target="_blank">{label}</a> : label;
 }
 
 function DetailRow({label, values}: { label: string, values: string | string[] | ReactElement | ReactElement[] }) {
@@ -48,7 +69,6 @@ function DetailRow({label, values}: { label: string, values: string | string[] |
                         <li key={i}>{v}</li>
                     )}
                 </ul>) : values}
-
             </div>
         </div>
     );

@@ -1,5 +1,5 @@
-import {ChangeEvent, FormEventHandler} from 'react';
-import {FieldErrors, useForm, UseFormRegister, UseFormSetValue, UseFormWatch} from 'react-hook-form';
+import {FormEventHandler} from 'react';
+import {Controller, FieldErrors, useForm, UseFormRegister, Control} from 'react-hook-form';
 import * as Dialog from '@radix-ui/react-dialog';
 import MDEditor from '@uiw/react-md-editor';
 import useFormSubmissionState, {FormSubmissionState} from '../hooks/useFormSubmission';
@@ -23,13 +23,7 @@ export default function RegisterNewVocab() {
 function RegisterNewVocabModalContent() {
     const [authEnabled, userInfo] = useAuth();
     const [state, onSubmit, StatusModal] = useFormSubmissionState(onNewVocabInputsSubmit);
-    const {
-        register,
-        formState: {errors},
-        watch,
-        setValue,
-        handleSubmit
-    } = useForm<NewVocabInputs>();
+    const {register, formState: {errors}, handleSubmit, control} = useForm<NewVocabInputs>();
 
     async function onNewVocabInputsSubmit(data: NewVocabInputs) {
         const formData = new FormData();
@@ -48,7 +42,7 @@ function RegisterNewVocabModalContent() {
 
     return (
         <StatusModal success="Your vocabulary has been submitted!">
-            <RegisterNewVocabForm register={register} errors={errors} watch={watch} setValue={setValue}
+            <RegisterNewVocabForm register={register} errors={errors} control={control}
                                   isDisabled={state === FormSubmissionState.WAITING}
                                   onSubmit={handleSubmit(onSubmit)}/>
         </StatusModal>
@@ -75,16 +69,13 @@ function LoginMessage() {
     );
 }
 
-function RegisterNewVocabForm({isDisabled, register, errors, watch, setValue, onSubmit}: {
+function RegisterNewVocabForm({isDisabled, register, errors, control, onSubmit}: {
     isDisabled: boolean,
     register: UseFormRegister<NewVocabInputs>,
     errors: FieldErrors<NewVocabInputs>,
-    watch: UseFormWatch<NewVocabInputs>,
-    setValue: UseFormSetValue<NewVocabInputs>,
+    control: Control<NewVocabInputs>,
     onSubmit: FormEventHandler
 }) {
-    const descriptionRegister = register('description', {required: true});
-
     return (
         <>
             <Dialog.Title className="DialogTitle">Register a new vocabulary</Dialog.Title>
@@ -109,11 +100,11 @@ function RegisterNewVocabForm({isDisabled, register, errors, watch, setValue, on
 
                     <label className={errors.description ? 'error' : ''}>
                         Description
-                        <MDEditor className="mdEditor" value={watch('description')} onBlur={descriptionRegister.onBlur}
-                                  onChange={(description, event) => {
-                                      setValue('description', description || '');
-                                      descriptionRegister.onChange(event as ChangeEvent);
-                                  }}/>
+                        <Controller name="description" control={control} rules={{required: true}}
+                                    render={({field: {value, onChange, onBlur}}) => (
+                                        <MDEditor className="mdEditor" value={value}
+                                                  onChange={onChange} onBlur={onBlur}/>
+                                    )}/>
                     </label>
 
                     <div className="center">

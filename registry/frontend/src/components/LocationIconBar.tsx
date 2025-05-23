@@ -1,18 +1,36 @@
 import {MouseEvent, MouseEventHandler} from 'react';
 import {IconDefinition} from '@fortawesome/fontawesome-svg-core';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faGithub} from '@fortawesome/free-brands-svg-icons'
 import {faArrowUpRightFromSquare, faBook, faDownload, faGear, faHouse} from '@fortawesome/free-solid-svg-icons';
 import {Location} from '../misc/interfaces';
 
 interface LocationIconBarProps {
     locations: Location[];
-    inline: boolean;
     onLocationClick: (loc: Location, e: MouseEvent<HTMLAnchorElement>) => void;
 }
 
-export default function LocationIconBar({locations, inline, onLocationClick}: LocationIconBarProps) {
+export default function LocationIconBar({locations, onLocationClick}: LocationIconBarProps) {
+    function sortLocations(a: Location, b: Location) {
+        if (!a.recipe) return -1;
+        if (!b.recipe) return 1;
+        return a.recipe.localeCompare(b.recipe);
+    }
+
+    const homepages = locations.filter(loc => loc.type === 'homepage').sort(sortLocations);
+    const otherLocations = locations.filter(loc => loc.type !== 'homepage').sort(sortLocations);
+
     return (
-        <div className={`iconBar ${inline ? 'inline' : ''}`}>
+        <>
+            <IconBar locations={homepages} onLocationClick={onLocationClick}/>
+            <IconBar locations={otherLocations} onLocationClick={onLocationClick}/>
+        </>
+    );
+}
+
+function IconBar({locations, onLocationClick}: LocationIconBarProps) {
+    return (
+        <div className="iconBar">
             {locations.map(loc =>
                 <LocationIcon key={loc.location} location={loc} onClick={e => onLocationClick(loc, e)}/>)}
         </div>
@@ -35,8 +53,14 @@ function LocationIcon({location, onClick}: {
                 text = 'Open documentation';
                 break;
             default:
-                iconDefinition = faHouse;
-                text = 'Go to homepage';
+                if (location.location.startsWith('https://github.com')) {
+                    iconDefinition = faGithub;
+                    text = 'Go to GitHub repository';
+                }
+                else {
+                    iconDefinition = faHouse;
+                    text = 'Go to homepage';
+                }
                 break;
         }
     }
