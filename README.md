@@ -18,6 +18,8 @@ You are here in one of the repositories that form part of [the architecture](htt
 # Usage
 The vocabulary's search and browser's front-end generates the graphic user interface meant for end-users to search and browse vocabularies at the SSH FAIR vocabulary registry ([https://registry.vocabs.clariah.nl](https://registry.vocabs.clariah.nl)).
 
+API use/documentation (forthcoming)
+
 # Documentation
 More information about the project and the vocabulary registry can be found here: [https://registry.vocabs.clariah.nl/about/](https://registry.vocabs.clariah.nl/about/).
 
