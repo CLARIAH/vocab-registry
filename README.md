@@ -1,17 +1,16 @@
-# SSH FAIR Vocabulary Registry: Search and browser's front-end
+# SSH FAIR Vocabulary Registry: Core – API Backend, Search Engine & Front-End
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 # Introduction
 
-This repository contains code and documentation of one of the components of the FAIR vocabulary registry (i.e., the
-vocabulary registry's search engine and browsing interface).
+This repository contains code and documentation of the core component of the FAIR vocabulary registry (i.e., the vocabulary registry's API backend, database configuration, and end-user browsing/search front-end.
 
 The FAIR Vocabulary Registry for the Humanities and Social Sciences (SSH) is built in the context of the "Social Sciences and Humanities Open Cloud" project ([SSHOC-NL](https://sshoc.nl/)). This project develops state-of-the-art infrastructure for researchers, in collaboration between [ODISSEI](https://odissei-data.nl/) (Open Data Infrastructure for Social Science and Economic Innovations) and [CLARIAH](https://www.clariah.nl/) (Common Lab Research Infrastructure for the Arts and Humanities).
 
 The SSH FAIR Vocabulary Registry is a one-stop reference service for vocabularies that are relevant to researchers, developers, data managers or curators working on improving the FAIR-ness of research data in the SSH research communities, mostly in the context of SSHOC-NL. It aims to support them in finding, (re)using, publishing and adding vocabularies to the registry.
 
-You are here in one of the repositories that form part of [the architecture](https://registry.vocabs.clariah.nl/about/) of the SSH FAIR vocabulary registry. This specific repository contains the code for the search engine and browser's front-end (indexes configuration and a web graphic user interface (GUI) developed in React).
+You are here in one of the repositories that form part of [the architecture](https://registry.vocabs.clariah.nl/about/) of the SSH FAIR vocabulary registry. This specific repository provides the API backend, database configuration, and the end-user search and browsing interface. It also includes the search engine with its index configuration, along with a web-based graphical user interface (GUI) built in React.
 
 # Working with the code
 (forthcoming)
